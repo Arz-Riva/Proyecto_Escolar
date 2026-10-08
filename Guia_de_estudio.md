@@ -647,3 +647,87 @@ assert dividir(10, 0) == 0
 * `amortizacion.cpp`: `calcular_tasa_mensual`, `calcular_fila_frances` son funciones puras de Unidad I y II.
 * `graficas.py`: usa `sum(fila["interes"] for fila in tabla)` y comprehensions, ejemplo real de estilo funcional.
 * `ventana.py`: es POO (`class AplicacionSimulador`) + funcional (llama al nucleo puro). Perfecto ejemplo de POO vs PF conviviendo.
+
+---
+
+# ANEXO - Temas complementarios
+
+## A.1 Comprehensions (listas de una linea)
+
+Forma corta de crear listas en una sola linea, en vez de usar `for` con `append`.
+
+```python
+# Normal
+numeros = [1, 2, 3, 4, 5]
+doblados = []
+for n in numeros:
+    doblados.append(n * 2)
+
+# Comprehension (lo mismo, una linea)
+doblados = [n * 2 for n in numeros]
+
+# Con condicion
+pares = [n for n in range(10) if n % 2 == 0]  # [0, 2, 4, 6, 8]
+```
+
+**Ejercicio:** Crea una lista `cuadrados` con los cuadrados de los numeros del 1 al 5 usando comprehension.
+
+## A.2 filter y reduce (herramientas funcionales)
+
+`filter` se queda con algunos elementos, `reduce` junta todo en uno solo.
+
+```python
+from functools import reduce
+
+numeros = [1, 2, 3, 4, 5, 6]
+
+# filter: solo pares
+pares = list(filter(lambda n: n % 2 == 0, numeros))  # [2, 4, 6]
+
+# reduce: sumar todos
+total = reduce(lambda a, b: a + b, numeros)  # 21
+```
+
+| Funcion | Hace | Ejemplo |
+|---------|------|---------|
+| `map` | Transforma cada uno | `[1,2,3]` -> `[2,4,6]` |
+| `filter` | Se queda con algunos | `[1,2,3,4]` -> `[2,4]` |
+| `reduce` | Junta todo en uno | `[1,2,3,4]` -> `10` |
+
+**Ejercicio:** Usa `filter` para quedarte solo con los numeros mayores a 3 de la lista `[1, 5, 2, 8, 3, 9]`.
+
+## A.3 Manejo de errores (try/except)
+
+Si tu programa se va a romper, mejor que tu decidas que pasa en vez de que Python se cuelgue.
+
+```python
+def dividir(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return "No puedes dividir entre cero"
+
+print(dividir(10, 0))  # "No puedes dividir entre cero"
+print(dividir(10, 2))  # 5.0
+```
+
+**Ejercicio:** Escribe una funcion `convertir_a_numero(texto)` que intente convertir el texto a entero. Si no puede, regresa `"Eso no es un numero"`. Prueba con `"42"` y con `"hola"`.
+
+## A.4 Inmutabilidad profunda (no cambiar lo de adentro)
+
+Si copias algo que tiene cosas adentro, copia tambien lo de adentro.
+
+```python
+# NO funcional (cambia la original)
+original = [[1, 2], [3, 4]]
+original[0].append(99)  # ¡Cambiaste la original!
+
+# SI funcional (crea una copia nueva)
+original = [[1, 2], [3, 4]]
+nueva = [fila[:] for fila in original]  # copia cada fila
+nueva[0].append(99)
+print(original)  # [[1, 2], [3, 4]]  <- intacta
+print(nueva)     # [[1, 2, 99], [3, 4]]
+```
+
+**Ejercicio:** Dada la lista `datos = [[10, 20], [30, 40]]`, crea una copia profunda llamada `copia` y agrega `99` al primer sublista de `copia`. Verifica que `datos` sigue igual.

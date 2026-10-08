@@ -1,51 +1,6 @@
 [
   {
-    "fecha": "28/09/2026 11:19",
-    "monto": 10000.0,
-    "tasa": 12.0,
-    "meses": 24,
-    "sistema": "Frances",
-    "total": 11297.52,
-    "interes": 1297.63
-  },
-  {
-    "fecha": "28/09/2026 11:18",
-    "monto": 10000.0,
-    "tasa": 12.0,
-    "meses": 12,
-    "sistema": "Frances",
-    "total": 10661.87,
-    "interes": 661.86
-  },
-  {
-    "fecha": "27/09/2026 19:06",
-    "monto": 10000.0,
-    "tasa": 12.0,
-    "meses": 21,
-    "sistema": "Americano",
-    "total": 12100.0,
-    "interes": 2100.0
-  },
-  {
-    "fecha": "27/09/2026 19:06",
-    "monto": 10000.0,
-    "tasa": 12.0,
-    "meses": 12,
-    "sistema": "Frances",
-    "total": 10661.87,
-    "interes": 661.86
-  },
-  {
-    "fecha": "27/09/2026 19:05",
-    "monto": 10000.0,
-    "tasa": 12.0,
-    "meses": 24,
-    "sistema": "Frances",
-    "total": 11297.52,
-    "interes": 1297.63
-  },
-  {
-    "fecha": "27/09/2026 18:59",
+    "fecha": "08/10/2026 11:54",
     "monto": 10000.0,
     "tasa": 12.0,
     "meses": 12,
