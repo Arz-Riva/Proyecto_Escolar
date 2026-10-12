@@ -8,25 +8,96 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # ==========================================
 # Declaracion de Constantes
 # ==========================================
-COLOR_FONDO_GRAFICA = "#F8F9FA"
-COLOR_REJILLA = "#E0E0E0"
+PALETA_GRAFICA_OSCURA = {
+    "fondo": "#2B2B40",
+    "rejilla": "#44475A",
+    "texto": "#EAEAF0",
+    "suave": "#A7A7C0",
+    "borde": "#1E1E2E",
+    "frances": "#64B5F6",
+    "aleman": "#66BB6A",
+    "americano": "#EF5350",
+    "capital": "#66BB6A",
+    "interes": "#EF5350",
+    "esc_a": "#64B5F6",
+    "esc_b": "#FFB74D",
+}
 
-# Colores distintivos por sistema de amortizacion
-COLOR_FRANCES = "#1976D2"      # Azul corporativo
-COLOR_ALEMAN = "#2E7D32"       # Verde esmeralda
-COLOR_AMERICANO = "#D32F2F"    # Rojo rubi
+PALETA_GRAFICA_CLARA = {
+    "fondo": "#F8F9FA",
+    "rejilla": "#E0E0E0",
+    "texto": "#212121",
+    "suave": "#777777",
+    "borde": "white",
+    "frances": "#1976D2",
+    "aleman": "#2E7D32",
+    "americano": "#D32F2F",
+    "capital": "#2E7D32",
+    "interes": "#C62828",
+    "esc_a": "#1976D2",
+    "esc_b": "#EF6C00",
+}
+
+# Valores activos (inician en oscuro para cuidar la vista)
+COLOR_FONDO_GRAFICA = PALETA_GRAFICA_OSCURA["fondo"]
+COLOR_REJILLA = PALETA_GRAFICA_OSCURA["rejilla"]
+COLOR_TEXTO_GRAFICA = PALETA_GRAFICA_OSCURA["texto"]
+COLOR_TEXTO_SUAVE = PALETA_GRAFICA_OSCURA["suave"]
+COLOR_BORDE_BARRA = PALETA_GRAFICA_OSCURA["borde"]
+
+# Colores distintivos por sistema de amortizacion (brillantes para fondo oscuro)
+COLOR_FRANCES = PALETA_GRAFICA_OSCURA["frances"]
+COLOR_ALEMAN = PALETA_GRAFICA_OSCURA["aleman"]
+COLOR_AMERICANO = PALETA_GRAFICA_OSCURA["americano"]
 
 # Colores para la relacion interes-capital del sistema seleccionado
-COLOR_CAPITAL = "#2E7D32"
-COLOR_INTERES = "#C62828"
+COLOR_CAPITAL = PALETA_GRAFICA_OSCURA["capital"]
+COLOR_INTERES = PALETA_GRAFICA_OSCURA["interes"]
 
 # Colores para escenarios A y B de la comparativa
-COLOR_ESCENARIO_A = "#1976D2"
-COLOR_ESCENARIO_B = "#EF6C00"
+COLOR_ESCENARIO_A = PALETA_GRAFICA_OSCURA["esc_a"]
+COLOR_ESCENARIO_B = PALETA_GRAFICA_OSCURA["esc_b"]
+
+
+def establecer_modo_graficas(modo_tema: str):
+    """Cambia la paleta activa de graficas a 'claro' u 'oscuro'."""
+    paleta = PALETA_GRAFICA_CLARA if modo_tema == "claro" else PALETA_GRAFICA_OSCURA
+    global COLOR_FONDO_GRAFICA, COLOR_REJILLA, COLOR_TEXTO_GRAFICA
+    global COLOR_TEXTO_SUAVE, COLOR_BORDE_BARRA
+    global COLOR_FRANCES, COLOR_ALEMAN, COLOR_AMERICANO
+    global COLOR_CAPITAL, COLOR_INTERES, COLOR_ESCENARIO_A, COLOR_ESCENARIO_B
+    COLOR_FONDO_GRAFICA = paleta["fondo"]
+    COLOR_REJILLA = paleta["rejilla"]
+    COLOR_TEXTO_GRAFICA = paleta["texto"]
+    COLOR_TEXTO_SUAVE = paleta["suave"]
+    COLOR_BORDE_BARRA = paleta["borde"]
+    COLOR_FRANCES = paleta["frances"]
+    COLOR_ALEMAN = paleta["aleman"]
+    COLOR_AMERICANO = paleta["americano"]
+    COLOR_CAPITAL = paleta["capital"]
+    COLOR_INTERES = paleta["interes"]
+    COLOR_ESCENARIO_A = paleta["esc_a"]
+    COLOR_ESCENARIO_B = paleta["esc_b"]
 
 # ==========================================
 # Declaracion de Funciones de Graficacion
 # ==========================================
+
+def _aplicar_tema_oscuro_eje(eje):
+    """Aplica texto claro y leyenda oscura a un eje de matplotlib."""
+    eje.title.set_color(COLOR_TEXTO_GRAFICA)
+    eje.xaxis.label.set_color(COLOR_TEXTO_GRAFICA)
+    eje.yaxis.label.set_color(COLOR_TEXTO_GRAFICA)
+    eje.tick_params(colors=COLOR_TEXTO_GRAFICA, labelcolor=COLOR_TEXTO_GRAFICA)
+    for etiqueta in list(eje.get_xticklabels()) + list(eje.get_yticklabels()):
+        etiqueta.set_color(COLOR_TEXTO_GRAFICA)
+    leyenda = eje.get_legend()
+    if leyenda is not None:
+        marco_leyenda = leyenda.get_frame()
+        marco_leyenda.set_facecolor(COLOR_FONDO_GRAFICA)
+        marco_leyenda.set_edgecolor(COLOR_REJILLA)
+        for texto_leyenda in leyenda.get_texts():
+            texto_leyenda.set_color(COLOR_TEXTO_GRAFICA)
 
 def generar_figura_comparativa_saldos(dict_tablas: dict[str, list[dict]], val_monto_inicial: float) -> Figure:
     """
@@ -41,7 +112,7 @@ def generar_figura_comparativa_saldos(dict_tablas: dict[str, list[dict]], val_mo
     if not dict_tablas or "frances" not in dict_tablas or not dict_tablas["frances"]:
         eje.text(0.5, 0.5, "No hay datos para comparar.\nEjecuta una simulacion primero.",
                  horizontalalignment="center", verticalalignment="center",
-                 transform=eje.transAxes, color="#777777", fontsize=11)
+                 transform=eje.transAxes, color=COLOR_TEXTO_SUAVE, fontsize=11)
         eje.set_xticks([])
         eje.set_yticks([])
         return figura
@@ -74,6 +145,7 @@ def generar_figura_comparativa_saldos(dict_tablas: dict[str, list[dict]], val_mo
     eje.grid(True, linestyle="--", alpha=0.6, color=COLOR_REJILLA)
     eje.legend(loc="upper right", frameon=True, fontsize=9)
     eje.yaxis.set_major_formatter("${x:,.0f}")
+    _aplicar_tema_oscuro_eje(eje)
 
     figura.tight_layout()
     return figura
@@ -92,7 +164,7 @@ def generar_figura_comparativa_cuotas(dict_tablas: dict[str, list[dict]]) -> Fig
     if not dict_tablas or "frances" not in dict_tablas or not dict_tablas["frances"]:
         eje.text(0.5, 0.5, "No hay datos para comparar.\nEjecuta una simulacion primero.",
                  horizontalalignment="center", verticalalignment="center",
-                 transform=eje.transAxes, color="#777777", fontsize=11)
+                 transform=eje.transAxes, color=COLOR_TEXTO_SUAVE, fontsize=11)
         eje.set_xticks([])
         eje.set_yticks([])
         return figura
@@ -121,6 +193,7 @@ def generar_figura_comparativa_cuotas(dict_tablas: dict[str, list[dict]]) -> Fig
     eje.grid(True, linestyle="--", alpha=0.6, color=COLOR_REJILLA)
     eje.legend(loc="upper left", frameon=True, fontsize=9)
     eje.yaxis.set_major_formatter("${x:,.0f}")
+    _aplicar_tema_oscuro_eje(eje)
 
     figura.tight_layout()
     return figura
@@ -139,7 +212,7 @@ def generar_figura_comparativa_costos(dict_tablas: dict[str, list[dict]]) -> Fig
     if not dict_tablas or "frances" not in dict_tablas or not dict_tablas["frances"]:
         eje.text(0.5, 0.5, "No hay datos para comparar.\nEjecuta una simulacion primero.",
                  horizontalalignment="center", verticalalignment="center",
-                 transform=eje.transAxes, color="#777777", fontsize=11)
+                 transform=eje.transAxes, color=COLOR_TEXTO_SUAVE, fontsize=11)
         eje.set_xticks([])
         eje.set_yticks([])
         return figura
@@ -163,7 +236,8 @@ def generar_figura_comparativa_costos(dict_tablas: dict[str, list[dict]]) -> Fig
                      xytext=(0, 4),
                      textcoords="offset points",
                      ha="center", va="bottom",
-                     fontweight="bold", fontsize=10)
+                     fontweight="bold", fontsize=10,
+                     color=COLOR_TEXTO_GRAFICA)
 
     # Formato visual
     eje.set_title("Comparativa de Intereses Totales Pagados", fontsize=12, fontweight="bold", pad=12)
@@ -174,6 +248,7 @@ def generar_figura_comparativa_costos(dict_tablas: dict[str, list[dict]]) -> Fig
     # Margen superior para las etiquetas de texto
     if valores_intereses:
         eje.set_ylim(0, max(valores_intereses) * 1.18)
+    _aplicar_tema_oscuro_eje(eje)
 
     figura.tight_layout()
     return figura
@@ -192,7 +267,7 @@ def generar_figura_relacion_interes_capital(lista_filas: list[dict]) -> Figure:
     if not lista_filas:
         eje.text(0.5, 0.5, "No hay datos para mostrar.\nEjecuta una simulacion primero.",
                  horizontalalignment="center", verticalalignment="center",
-                 transform=eje.transAxes, color="#777777", fontsize=10)
+                 transform=eje.transAxes, color=COLOR_TEXTO_SUAVE, fontsize=10)
         eje.set_xticks([])
         eje.set_yticks([])
         figura.tight_layout(pad=2.0)
@@ -208,7 +283,7 @@ def generar_figura_relacion_interes_capital(lista_filas: list[dict]) -> Figure:
     valores = [total_capital, total_interes]
     colores = [COLOR_CAPITAL, COLOR_INTERES]
 
-    barras = eje.bar(nombres, valores, color=colores, width=0.45, alpha=0.9, edgecolor="white")
+    barras = eje.bar(nombres, valores, color=colores, width=0.45, alpha=0.9, edgecolor=COLOR_BORDE_BARRA)
 
     for barra in barras:
         altura = barra.get_height()
@@ -217,7 +292,8 @@ def generar_figura_relacion_interes_capital(lista_filas: list[dict]) -> Figure:
                      xytext=(0, 4),
                      textcoords="offset points",
                      ha="center", va="bottom",
-                     fontweight="bold", fontsize=9)
+                     fontweight="bold", fontsize=9,
+                     color=COLOR_TEXTO_GRAFICA)
 
     eje.set_title(f"Relacion Interes-Capital (Interes: {porc_interes:.1f}% del total)",
                   fontsize=11, fontweight="bold", pad=10)
@@ -229,6 +305,8 @@ def generar_figura_relacion_interes_capital(lista_filas: list[dict]) -> Figure:
 
     if valores and max(valores) > 0:
         eje.set_ylim(0, max(valores) * 1.25)
+    _aplicar_tema_oscuro_eje(eje)
+    eje.tick_params(labelsize=8)
 
     figura.tight_layout(pad=2.0)
     return figura
@@ -247,7 +325,7 @@ def generar_figura_comparativa_escenarios(lista_a: list[dict], lista_b: list[dic
         eje.set_facecolor(COLOR_FONDO_GRAFICA)
         eje.text(0.5, 0.5, "No hay escenarios para comparar.\nFija A y B primero.",
                  horizontalalignment="center", verticalalignment="center",
-                 transform=eje.transAxes, color="#777777", fontsize=10)
+                 transform=eje.transAxes, color=COLOR_TEXTO_SUAVE, fontsize=10)
         eje.set_xticks([])
         eje.set_yticks([])
         figura.tight_layout(pad=2.0)
@@ -267,17 +345,18 @@ def generar_figura_comparativa_escenarios(lista_a: list[dict], lista_b: list[dic
     ancho = 0.32
     barras_a = eje_barras.bar([p - ancho / 2 for p in pos], [capital_a, interes_a],
                               width=ancho, color=COLOR_ESCENARIO_A, label=f"Escenario {titulo_a}",
-                              alpha=0.9, edgecolor="white")
+                              alpha=0.9, edgecolor=COLOR_BORDE_BARRA)
     barras_b = eje_barras.bar([p + ancho / 2 for p in pos], [capital_b, interes_b],
                               width=ancho, color=COLOR_ESCENARIO_B, label=f"Escenario {titulo_b}",
-                              alpha=0.9, edgecolor="white")
+                              alpha=0.9, edgecolor=COLOR_BORDE_BARRA)
     for barra in list(barras_a) + list(barras_b):
         altura = barra.get_height()
         if altura > 0:
             eje_barras.annotate(f"${altura:,.0f}",
                                 xy=(barra.get_x() + barra.get_width() / 2, altura),
                                 xytext=(0, 3), textcoords="offset points",
-                                ha="center", va="bottom", fontsize=7)
+                                ha="center", va="bottom", fontsize=7,
+                                color=COLOR_TEXTO_GRAFICA)
     eje_barras.set_title("Capital vs Interes A-B", fontsize=10, fontweight="bold", pad=8)
     eje_barras.set_xticks(pos)
     eje_barras.set_xticklabels(etiquetas, fontsize=8)
@@ -311,6 +390,10 @@ def generar_figura_comparativa_escenarios(lista_a: list[dict], lista_b: list[dic
     eje_saldo.legend(fontsize=7, loc="best", frameon=True)
     eje_saldo.yaxis.set_major_formatter("${x:,.0f}")
     eje_saldo.margins(x=0.02)
+    _aplicar_tema_oscuro_eje(eje_barras)
+    _aplicar_tema_oscuro_eje(eje_saldo)
+    eje_barras.tick_params(labelsize=7)
+    eje_saldo.tick_params(labelsize=7)
 
     figura.subplots_adjust(wspace=0.35, left=0.08, right=0.97, top=0.88, bottom=0.15)
     figura.tight_layout(pad=2.0)

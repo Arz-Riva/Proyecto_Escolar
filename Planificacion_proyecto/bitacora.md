@@ -492,7 +492,498 @@
 
 **Respuesta:** Matiz tupla vs array C++: parecido en tamaño fijo, distinto en mutabilidad de elementos y tipos.
 
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> hola muse, vamos a trabajar, lee antes de todo la carpeta "Rules_and_skills"
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso, escritura y formato)
+- `Roles_and_skills/skills.md` (roles Programador, Plan de estudio)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md`
+- `Planificacion_proyecto/bitacora.md`
+- `Planificacion_proyecto/Readme.md`
+
+**Nota:**
+- La carpeta se llama `Roles_and_skills`, no `Rules_and_skills`.
+
 ---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> primero a la app, quiero añardirle un tema oscuro (osea que tenga esos colores) ya que el blanco puede dañar mucho la vista
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python GUI)
+- `simulador_prestamos/gui/ventana.py` (constantes COLOR_*, `_configurar_estilos`)
+- `simulador_prestamos/gui/graficas.py` (COLOR_FONDO_GRAFICA, funciones puras)
+
+**Decision:**
+- Usuario eligio "Ejecutar directo": se aplico paleta oscura en `ventana.py` y `graficas.py`, verificado con `py_compile` y prueba Agg.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, todo bien pero me referia a que yp pudiera seleccionar tema claro u obscuro, para esto abajo de donde dice "simulador de intereses y amortizacion" pon un boto que diga claro u obscuro
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python GUI)
+- `simulador_prestamos/gui/ventana.py` (header, `_configurar_estilos`, `_construir_disposicion`)
+- `simulador_prestamos/gui/graficas.py` (paleta y `_aplicar_tema_oscuro_eje`)
+
+**Decision:**
+- Usuario eligio "Ejecutar directo": toggle Claro/Oscuro con `PALETA_*`, boton bajo titulo y `establecer_modo_graficas()`, verificado `py_compile` + Agg.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> crees que se peuda añardir un boton que sea exportar a: y aparescan pdf o excel? si o no?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `simulador_prestamos/gui/ventana.py` (`lista_filas_actual`, `_actualizar_tabla`)
+
+**Respuesta:**
+- Si. Solo consulta de viabilidad, sin codigo aun. Requiere `openpyxl` para Excel y `reportlab` o `fpdf2` para PDF (no instalados, solo `matplotlib`+`pillow` activos).
+
+**Decision:**
+- Usuario eligio "Si, implementar": se instalo `openpyxl`+`reportlab`, se creo `gui/exportar.py` y boton `Exportar a` en tabla; verificado con archivos reales en `%TEMP%`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, pero que tambien se la tabla y no necesariamente sean botones sepadados
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `simulador_prestamos/gui/ventana.py` (boton `Exportar a` actual)
+- `simulador_prestamos/gui/exportar.py`
+
+**Nota:**
+- Prompt ambiguo: pendiente aclarar si es exportar tabla+grafica junta, exportar Comparar A/B, o un solo boton con submenu.
+
+**Decision:**
+- Usuario eligio "Tabla + grafica juntas": un solo `Exportar a` exporta tabla y grafica en el mismo PDF/Excel.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, ahora lo mismo pero que este en la ciomparacion de las tablas
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python)
+- `simulador_prestamos/gui/ventana.py` (`_construir_apartado_comparar`, `lista_tabla_a/b`)
+- `simulador_prestamos/gui/exportar.py` (nuevo `exportar_comparativa_*`)
+- `simulador_prestamos/gui/graficas.py` (`generar_figura_comparativa_escenarios`)
+
+**Decision:**
+- Ejecutar directo mismo patron: un solo `Exportar a` en Comparar con A+B+grafica juntas.
+- Verificado: `comp_AB.xlsx` (66389 B, 1 imagen, 14 filas) y `comp_AB.pdf` (69258 B).
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ahora, cuando se hace el pdf se realiza con un formato prefijo no? podemos modificarlo??
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `simulador_prestamos/gui/exportar.py` (`exportar_tabla_pdf`, `exportar_comparativa_pdf`, `_estilo_tabla_pdf`)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python)
+
+**Respuesta:**
+- Si, formato prefijo actual: A4 vertical, titulo, resumen, tabla morada #380057 con zebra, grafica 440x270. Si se puede modificar color, logo, fuentes y orden.
+
+**Decision:**
+- Usuario eligio "primero, agrega el logo y pie de pagina": logo 180x42 arriba y pie con fecha + Pag. en ambas plantillas PDF.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> todo esto lo estas anotando en la bitacora?
+
+**Archivos usados:**
+- `Planificacion_proyecto/bitacora.md` (verificacion de 7 registros del 11/10/2026)
+- `Apuntes.md` (secciones 17 a 19.3)
+- `Roles_and_skills/rules.md` (Regla de Proceso 2: anotar prompts)
+
+**Respuesta:**
+- Si. 7 prompts de hoy anotados con archivos usados y decisiones; detalle en `Apuntes.md:17-19.3`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, dime que tipo de letra usas en los formatos? el mismo que el logo?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `simulador_prestamos/gui/ventana.py` (fuentes `Segoe UI`)
+- `simulador_prestamos/gui/exportar.py` (`Helvetica`, `Font` Calibri por defecto)
+- `simulador_prestamos/gui/graficas.py` (matplotlib por defecto `DejaVu Sans`)
+- `simulador_prestamos/gui/Img/generar_recursos.py` (logo busca `Segoe UI` o `Arial`)
+
+**Respuesta:**
+- No es la misma en todos: GUI `Segoe UI` como el logo; PDF `Helvetica`; Excel `Calibri`; graficas `DejaVu Sans`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, en los titulos de los pdf y excel usa el mismo que el logo, ya lo que no sea tabla ni grafica, usa arial
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `simulador_prestamos/gui/exportar.py` (estilos PDF/Excel, registro TTF)
+- `simulador_prestamos/gui/Img/generar_recursos.py` (logo `Segoe UI`)
+
+**Decision:**
+- Ejecutar directo: titulos en `Segoe UI`, resto no-tabla/grafica en `Arial`; verificado `fuente.xlsx/pdf`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ahora, el pie de pagina ponle un fondo, el mismo color morado de el logo y las letras y logo de la parte superior del emcabezado, quitalas del cuerpo y ponlas en el lugar de encabezado. Ojo, las letras a un lado de el logo son blancas y no se distingen, igual de color morado o amarillo si le pones un fondo morado.
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `simulador_prestamos/gui/exportar.py` (decoracion header/footer PDF)
+- `simulador_prestamos/gui/Img/intresta-logo-horizontal.png` (320x75)
+
+**Decision:**
+- Ejecutar directo: header/footer morados con logo+titulo amarillo y pie blanco; verificado `hdr_tabla.pdf` y `hdr_comp.pdf`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ya en la aplicacion, podrias modificar un detalle, quiero que donde esta el boton del tema de la aplicacion, lo quites y pongas un boton que sean unas rallitas horizontales qeu me despliege a la izquierda una barra vertical que diga, area de trabajo y sea lo que esta al iniciar la app, después, historial (quitas el boton de historial del area principal) y muestre el historial y al ultimo configuracion y de meiestras pones el boton del tema
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: describir proceso y esperar Si)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python)
+- `simulador_prestamos/gui/ventana.py` (`_construir_disposicion`, `cuaderno_principal`, header)
+
+**Decision:**
+- Usuario eligio "Ejecutar directo": sidebar ☰ con Area/Historial/Config; Historial fuera del notebook; tema en Config; verificado `OK_SIDEBAR`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> ok, el titulo que dice "Simulador de Intereses y Amortizaciones" hazlo mas grande sin desplazar el entorno de trabajo
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `simulador_prestamos/gui/ventana.py` (`Titulo.TLabel`, `marco_header`)
+
+**Decision:**
+- Ejecutar directo: titulo 22 bold con header fijo 80px y `pack_propagate(False)`; verificado `OK_TITULO`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompt:**
+> listo, dime tres ideas que pueda añadir a mi proyecto que complementen con el objetivo de la app
+
+**Archivos usados:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (objetivo: simular prestamo, tablas, graficas, IA)
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo consulta, sin codigo: 3 ideas (IA explicativa, abonos extra, indicadores CAT/TIR).
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> explicame mas sobre como implementarias el tema 2 y 3
+
+**Archivos usados:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (nucleo funcional C++, orquestador Python)
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo explicacion, sin codigo: detalle de abonos extra (C++ puro + Comparar A/B) e indicadores (sum/zip/filter + tarjetas y export).
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, pero me referia en que consistia la idea no como se programa y sobre todo como funciona
+
+**Archivos usados:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (objetivo: entender cuanto y cuando pagar)
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo conceptual: que es un abono extra y como ahorra intereses; que significan los indicadores y como leerlos.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, implementemos la idea 3
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `simulador_prestamos/gui/ventana.py` (resumen financiero, `_actualizar_resumen`)
+- `simulador_prestamos/gui/exportar.py` (PDF/Excel)
+
+**Decision:**
+- Ejecutar directo: `gui/indicadores.py` + tarjetas en formulario + linea en PDF/Excel; verificado `OK_IND/UI/EXP`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> como verifico su implementacion?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `simulador_prestamos/main.py` (punto de entrada)
+- `simulador_prestamos/core_cpp/amortizador.exe` (binario verificado 22/09/2026)
+- `simulador_prestamos/gui/indicadores.py`, `ventana.py`, `exportar.py`
+
+**Respuesta:**
+- Solo guia de verificacion, sin codigo: pasos visuales en app + comandos headless.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, implementemos el tema 2 de los abonos
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (nucleo funcional C++, orquestador Python)
+- `simulador_prestamos/core_cpp/amortizacion.hpp`, `amortizacion.cpp`, `main.cpp`
+- `simulador_prestamos/gui/ventana.py`, `exportar.py`, `indicadores.py`
+
+**Decision:**
+- Ejecutar directo: abonos en C++ puro (5to arg) + UI en formulario + auto A/B en Comparar.
+- Verificado: binario `frances 12m base 661.86 vs abono 570.22 (11 filas)`, `aleman`, `americano`, payoff 1 fila, error mes 99, `OK_PY_ABONO/UI/EXP`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, dime donde esta esa area de "Abonos extra"
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `simulador_prestamos/gui/ventana.py` (`_construir_panel_formulario:1027-1057`)
+
+**Respuesta:**
+- Solo ubicacion, sin codigo: Area de trabajo, Calcular Tabla, panel izquierdo bajo Indicadores, con scroll.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> pero como que IA seria en Ollama? que pudiera ser local (lo digo por los recursos de mi lap) y sobre todo que sea list
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (capa de IA)
+- `simulador_prestamos/gui/ia.py` (punto de integracion)
+
+**Respuesta:**
+- Solo conceptual: que es Ollama, modelos ligeros por RAM (1b-3b) y vinculo por API local sin key.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> 16 de ram, windows, dime si hay ms variedad en IA con estas especificacones
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (capa de IA)
+
+**Respuesta:**
+- Solo conceptual: abanico con 16GB (3b rapidos, 7b-8b equilibrados, 13b-14b maximo) y recomendacion para la app.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> no, ptra cosa, esas IAs me servirian para otra cosa? qwen2.5 o llama3.1
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo conceptual: usos generales (estudio, redaccion, codigo, traduccion), limites y privacidad local.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok,ya entrando en otros temas,podria descargar un modelo distinto y cuantizarlo? para que me sirva para codigo?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo conceptual: cuantizar uno mismo vs descargar GGUF ya cuantizado; recomendados para codigo con 16GB.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, quiero una IA cuantizada para programar, cual me recomiendas?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+
+**Respuesta:**
+- Solo recomendacion: `qwen2.5-coder:7b` Q4_K_M + comando y alternativas.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> Ok, volvamos a la app, dime que mas p puedo añadir en la configuracion?
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `simulador_prestamos/gui/ventana.py` (`_construir_vista_config`, solo boton de tema)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md`
+
+**Respuesta:**
+- Solo propuesta, sin codigo: 6 opciones de configuracion persistente en JSON.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ahora platicame como se implementaria, el tema 1 (IA) en la app? me refiero en el aspecto de como vincular la IA y la app
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (capa de IA, seccion 6)
+- `simulador_prestamos/gui/ia.py` (TODOs actuales: `llamar_api`, `explicar`, `comparar`, `escenario`)
+
+**Respuesta:**
+- Solo conceptual: API key en `.env`, `ia.py` arma prompts con datos ya calculados, botones en GUI, IA nunca calcula.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, aparece indicadores pero no la informacion, parece ser que no se despliega la informacion por el espacio o dime y resuelvelo
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `simulador_prestamos/gui/ventana.py` (`_construir_panel_formulario`, `_refrescar_tema`)
+
+**Decision:**
+- Ejecutar directo: panel izquierdo con scroll vertical + mousewheel; verificado `OK_SCROLL_FORM`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, analiza la carpeta "Roles_and_skills" y procederemos con las modificaciones
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso, escritura y formato)
+- `Roles_and_skills/skills.md` (roles Programador, Plan de estudio)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md`
+- `Planificacion_proyecto/bitacora.md`
+- `Planificacion_proyecto/Readme.md`
+
+**Respuesta:**
+- Solo analisis, sin codigo: reglas vs skills incompletos y propuesta de proceso con bitacora.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, recomiendame que puedo añadir en el apartado de configuracion
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2)
+- `simulador_prestamos/gui/ventana.py` (`_construir_vista_config:519-530`, solo boton de tema)
+
+**Respuesta:**
+- Solo propuesta, sin codigo: 6 ideas (persistencia, formato numeros, defaults export, accesibilidad, historial, fabrica).
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompt:**
+> ok, añadamos el tamaño de letra tambien el formato de los numeros y los defaults Exportacion
+
+**Archivos usados:**
+- `Roles_and_skills/rules.md` (Reglas de Proceso 1 y 2, escritura snake_case, formato)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `simulador_prestamos/gui/configuracion.py` (nuevo: cargar/guardar JSON, formatear_moneda)
+- `simulador_prestamos/gui/ventana.py` (tema, estilos, formato moneda, export con initialdir)
+- `simulador_prestamos/gui/exportar.py` (decimales, simbolo, logo/pie opcionales)
+- `simulador_prestamos/config.json` (persistencia, creado en test y restablecido a defecto)
+
+**Decision:**
+- Ejecutar directo: Config con tamano letra, decimales/moneda y carpeta/logo/pie; verificado `OK_COMPILE` + export xlsx/pdf + `OK_UI_CONFIG`.
+
+---
+
 
 
 

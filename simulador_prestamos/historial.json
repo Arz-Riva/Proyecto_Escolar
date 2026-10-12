@@ -1,6 +1,234 @@
 [
   {
-    "fecha": "08/10/2026 11:54",
+    "fecha": "11/10/2026 21:10",
+    "monto": 350000.0,
+    "tasa": 24.0,
+    "meses": 30,
+    "sistema": "Aleman",
+    "abonos": [
+      {
+        "mes": 10,
+        "monto": 25000.0
+      },
+      {
+        "mes": 20,
+        "monto": 35000.0
+      }
+    ],
+    "total": 443999.92,
+    "interes": 94000.0
+  },
+  {
+    "fecha": "11/10/2026 21:09",
+    "monto": 350000.0,
+    "tasa": 24.0,
+    "meses": 30,
+    "sistema": "Aleman",
+    "abonos": [],
+    "total": 458499.99,
+    "interes": 108499.99
+  },
+  {
+    "fecha": "11/10/2026 21:04",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 3,
+        "monto": 300.0
+      }
+    ],
+    "total": 10633.77,
+    "interes": 633.76
+  },
+  {
+    "fecha": "11/10/2026 21:04",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [],
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 21:04",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 2,
+        "monto": 100.0
+      },
+      {
+        "mes": 7,
+        "monto": 280.0
+      }
+    ],
+    "total": 10637.12,
+    "interes": 637.11
+  },
+  {
+    "fecha": "11/10/2026 21:03",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 2,
+        "monto": 100.0
+      },
+      {
+        "mes": 7,
+        "monto": 280.0
+      }
+    ],
+    "total": 10637.12,
+    "interes": 637.11
+  },
+  {
+    "fecha": "11/10/2026 21:03",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 2,
+        "monto": 100.0
+      },
+      {
+        "mes": 7,
+        "monto": 280.0
+      }
+    ],
+    "total": 10637.12,
+    "interes": 637.11
+  },
+  {
+    "fecha": "11/10/2026 21:03",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 2,
+        "monto": 100.0
+      },
+      {
+        "mes": 7,
+        "monto": 280.0
+      }
+    ],
+    "total": 10637.12,
+    "interes": 637.11
+  },
+  {
+    "fecha": "11/10/2026 21:01",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [],
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 21:01",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [],
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 20:59",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "abonos": [
+      {
+        "mes": 3,
+        "monto": 1000.0
+      }
+    ],
+    "total": 10570.23,
+    "interes": 570.22
+  },
+  {
+    "fecha": "11/10/2026 20:54",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 20:54",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 20:49",
+    "monto": 10000.0,
+    "tasa": 14.0,
+    "meses": 16,
+    "sistema": "Frances",
+    "total": 11020.46,
+    "interes": 1020.42
+  },
+  {
+    "fecha": "11/10/2026 20:49",
+    "monto": 10000.0,
+    "tasa": 14.0,
+    "meses": 16,
+    "sistema": "Frances",
+    "total": 11020.46,
+    "interes": 1020.42
+  },
+  {
+    "fecha": "11/10/2026 20:49",
+    "monto": 10000.0,
+    "tasa": 14.0,
+    "meses": 16,
+    "sistema": "Frances",
+    "total": 11020.46,
+    "interes": 1020.42
+  },
+  {
+    "fecha": "11/10/2026 20:49",
+    "monto": 10000.0,
+    "tasa": 14.0,
+    "meses": 16,
+    "sistema": "Frances",
+    "total": 11020.46,
+    "interes": 1020.42
+  },
+  {
+    "fecha": "11/10/2026 20:48",
+    "monto": 10000.0,
+    "tasa": 12.0,
+    "meses": 12,
+    "sistema": "Frances",
+    "total": 10661.87,
+    "interes": 661.86
+  },
+  {
+    "fecha": "11/10/2026 20:48",
     "monto": 10000.0,
     "tasa": 12.0,
     "meses": 12,

@@ -20,6 +20,12 @@ struct FilaTabla {
     double val_saldo;
 };
 
+// Representa un abono extra a capital en un mes puntual
+struct AbonoExtra {
+    int num_mes;
+    double val_monto;
+};
+
 // ==========================================
 // Declaracion de Funciones Puras de Calculo
 // ==========================================
@@ -43,6 +49,13 @@ std::vector<FilaTabla> generar_tabla_aleman(double val_monto, double val_tasa_me
 // --- Sistema Americano (Interes periodico y capital al final) ---
 FilaTabla calcular_fila_americano(int num_mes, double val_monto_original, double val_tasa_mensual, int num_meses_plazo);
 std::vector<FilaTabla> generar_tabla_americano(double val_monto, double val_tasa_mensual, int num_meses_plazo);
+
+// --- Abonos extra a capital (funciones puras sobre cualquier sistema) ---
+double buscar_abono_mes(const std::vector<AbonoExtra>& vec_abonos, int num_mes);
+std::vector<AbonoExtra> parsear_abonos(const std::string& str_texto);
+std::vector<FilaTabla> generar_tabla_frances_con_abonos(double val_monto, double val_tasa_mensual, int num_meses_plazo, const std::vector<AbonoExtra>& vec_abonos);
+std::vector<FilaTabla> generar_tabla_aleman_con_abonos(double val_monto, double val_tasa_mensual, int num_meses_plazo, const std::vector<AbonoExtra>& vec_abonos);
+std::vector<FilaTabla> generar_tabla_americano_con_abonos(double val_monto, double val_tasa_mensual, int num_meses_plazo, const std::vector<AbonoExtra>& vec_abonos);
 
 // --- Utilerias de Serializacion ---
 std::string serializar_tabla_json(const std::vector<FilaTabla>& vec_tabla);

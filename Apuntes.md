@@ -472,4 +472,372 @@
 
 ---
 
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"primero a la app, quiero añardirle un tema oscuro (osea que tenga esos colores) ya que el blanco puede dañar mucho la vista"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/ventana.py`
+- `simulador_prestamos/gui/graficas.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python GUI)
+- `Planificacion_proyecto/bitacora.md` (registro del prompt)
+- `Roles_and_skills/rules.md` (snake_case, constantes en mayusculas, metodos privados con _, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo segun respuesta)
+
+#### 17. Tema oscuro para cuidar la vista (GUI + Graficas)
+- **Unidad II (2.1.7 Modulos y Organizacion):** *Separacion orquestador-trabajador sin tocar C++; solo presentacion en Python.*
+- **Descripcion de lo que hace el codigo:**
+  - **`ventana.py`:**
+    - Constantes oscuras `COLOR_FONDO="#1E1E2E"`, `COLOR_FONDO_TARJETA="#2B2B40"`, `COLOR_TEXTO_CLARO`, `COLOR_TEXTO_SUAVE`, `COLOR_CAMPO`, `COLOR_SELECCION`, `COLOR_BORDE`; acentos `COLOR_PRIMARIO="#C9A8FF"`, `COLOR_SECUNDARIO="#E5DE4B"`, `COLOR_ROJO="#EF5350"`, `COLOR_VERDE="#66BB6A"`.
+    - `_configurar_estilos()` con `TEntry`, `TCombobox`, `TNotebook.Tab` + `map(selected)`, `Tabla.Treeview` con `fieldbackground` oscuro y seleccion, `Vertical.TScrollbar` y `TSeparator`; `Canvas` de historial pasa de `#CFCFCF` a `COLOR_FONDO_TARJETA`.
+  - **`graficas.py`:**
+    - `COLOR_FONDO_GRAFICA="#2B2B40"`, `COLOR_REJILLA="#44475A"`, `COLOR_TEXTO_GRAFICA`, `COLOR_TEXTO_SUAVE`, `COLOR_BORDE_BARRA`; series brillantes `Frances="#64B5F6"`, `Aleman="#66BB6A"`, `Americano="#EF5350"`, `B="#FFB74D"`.
+    - Nueva funcion pura `_aplicar_tema_oscuro_eje(eje)` que pinta titulo, etiquetas, ticks y leyenda en claro con fondo oscuro; se llama en las 5 figuras; `annotate` y textos vacios usan color claro; `edgecolor="white"` pasa a `COLOR_BORDE_BARRA`.
+  - **Verificacion:** `py_compile` OK y generacion Agg de `generar_figura_relacion_interes_capital` y `generar_figura_comparativa_escenarios` OK con `face (0.16,0.16,0.25)`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ok, todo bien pero me referia a que yp pudiera seleccionar tema claro u obscuro, para esto abajo de donde dice "simulador de intereses y amortizacion" pon un boto que diga claro u obscuro"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/ventana.py`
+- `simulador_prestamos/gui/graficas.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python GUI)
+- `Planificacion_proyecto/bitacora.md` (registro del prompt)
+- `Roles_and_skills/rules.md` (snake_case, constantes en mayusculas, metodos privados con _, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo segun respuesta)
+
+#### 18. Boton Claro / Oscuro debajo del titulo (toggle de tema)
+- **Unidad II (2.1.7 Modulos y Organizacion):** *Presentacion conmutablesin tocar el nucleo C++; estado en memoria + re-render.*
+- **Descripcion de lo que hace el codigo:**
+  - **`ventana.py`:**
+    - Dicts `PALETA_OSCURA` y `PALETA_CLARA` + `obtener_colores_tema(modo)`; `MODO_TEMA_INICIAL="oscuro"`; `COLOR_*` quedan como alias oscuro.
+    - `__init__` guarda `modo_tema`, `dict_colores` y llama `establecer_modo_graficas()`; `_configurar_estilos()` usa `col` activo y agrega estilo `Tema.TButton`.
+    - Header derecho con `marco_derecha`: titulo arriba y `ttk.Button(textvariable=var_texto_tema, command=_alternar_tema)` debajo con `anchor=E, pady=(4,0)`.
+    - `_alternar_tema()` cambia modo, actualiza `dict_colores`, llama `establecer_modo_graficas()`, `_configurar_estilos()` y `_refrescar_tema()` que repinta `raiz`, `lbl_logo`, `lienzo_historial`, texto del boton y re-renderiza `lista_filas_actual` y comparativa A-B.
+    - Import robusto en 3 niveles (`gui`, `simulador_prestamos.gui`, `graficas`) para evitar `ModuleNotFoundError`.
+  - **`graficas.py`:**
+    - `PALETA_GRAFICA_OSCURA` / `PALETA_GRAFICA_CLARA` + `establecer_modo_graficas(modo)` que muta los globales `COLOR_*`; `_aplicar_tema_oscuro_eje()` sigue aplicando texto/leyenda segun paleta activa.
+  - **Verificacion:** `py_compile` OK; Agg oscuro `face (0.16,0.16,0.25)` y claro `(0.97,0.97,0.98)`; `obtener_colores_tema('claro')['tarjeta']="#CFCFCF"`, oscuro `"#2B2B40"`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"crees que se peuda añardir un boton que sea exportar a: y aparescan pdf o excel? si o no?"*
+- *"Si, implementar" (respuesta a pregunta de viabilidad)*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py` (nuevo)
+- `simulador_prestamos/gui/ventana.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `Planificacion_proyecto/bitacora.md` (registro del prompt)
+- `Roles_and_skills/rules.md` (snake_case, constantes en mayusculas, metodos privados con _, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo segun respuesta)
+
+#### 19. Boton Exportar a PDF / Excel (tabla actual)
+- **Unidad II (2.1.7 Modulos y Organizacion) y Unidad III (3.1 sum):** *Modulo nuevo reutilizable + funciones puras de totales; sin base de datos, usa `lista_filas_actual` del trabajador C++.*
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - Constantes `ENCABEZADOS_TABLA`, `COLOR_CABECERA_EXCEL`; `_calcular_totales()` y `_texto_resumen()` puras con `sum()`.
+    - `exportar_tabla_excel(lista, params, ruta)` con `openpyxl`: resumen, cabecera morada, formato moneda, anchos y totales.
+    - `exportar_tabla_pdf(lista, params, ruta)` con `reportlab`: titulo, resumen, `Table` con estilo morado, zebra y `repeatRows`.
+  - **`ventana.py`:**
+    - Import de `filedialog` + `exportar_*` con fallback triple; header de tabla con `ttk.Menubutton("Exportar a")` y `Menu` PDF/Excel a la derecha.
+    - `_evento_exportar(tipo)` valida `lista_filas_actual`, pide ruta con `asksaveasfilename`, llama exportador y avisa con `showinfo`.
+  - **Dependencias:** `pip install openpyxl reportlab` (antes solo `matplotlib`+`pillow`).
+  - **Verificacion:** `py_compile` OK; export real a `%TEMP%/prueba_tabla.xlsx` (5286 B) y `.pdf` (2192 B) con 2 filas de prueba.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ok, pero que tambien se la tabla y no necesariamente sean botones sepadados"*
+- *Aclaracion elegida: "Tabla + grafica juntas"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py`
+- `simulador_prestamos/gui/ventana.py` (sin cambios, sigue un solo `Exportar a`)
+
+#### 19.1 Exportar tabla + grafica juntas en un solo archivo
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - `_guardar_grafica_temporal(lista)` genera `generar_figura_relacion_interes_capital()` y guarda png temporal con `savefig(dpi=150)`.
+    - `exportar_tabla_excel()` incrusta con `ImagenExcel` en `G2` (620x380) y borra el png temporal.
+    - `exportar_tabla_pdf()` agrega `Heading2` + `ImagenPDF` (440x270) tras la tabla y borra el png temporal.
+    - Se mantiene un solo boton `Exportar a` con submenu, sin botones separados.
+  - **Verificacion:** `py_compile` OK; conjunta 6 filas a `%TEMP%/conjunta.xlsx` (29189 B, 1 imagen, 11 filas) y `.pdf` (30115 B).
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ok, ahora lo mismo pero que este en la ciomparacion de las tablas"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py`
+- `simulador_prestamos/gui/ventana.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python)
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, constantes UPPER, metodos privados con _)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 19.2 Exportar Comparar A vs B con tabla + grafica juntas
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - `_guardar_grafica_comparativa_temporal(a,b)` con `generar_figura_comparativa_escenarios()`; `_titulo_escenario()` y `_escribir_bloque_escenario_excel()` reutilizables.
+    - `exportar_comparativa_excel(a,pa,b,pb,ruta)`: resumen A+B, 2 tablas, diferencia A-B y grafica (760x360) en `A{fin+2}`.
+    - `exportar_comparativa_pdf(a,pa,b,pb,ruta)`: titulo, 2 tablas con `_estilo_tabla_pdf()`, diferencia y grafica (460x220).
+  - **`ventana.py`:**
+    - `marco_acciones` suma `Menubutton Exportar a` con submenu PDF/Excel junto a Fijar A/B y Limpiar.
+    - `_evento_exportar_comparar(tipo)` valida A y B, pide ruta `comparativa_AB.*` y confirma con `showinfo`.
+  - **Verificacion:** `py_compile` OK; `comp_AB.xlsx` (66389 B, 1 imagen, 14 filas) y `comp_AB.pdf` (69258 B) con 2+2 filas de prueba.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ahora, cuando se hace el pdf se realiza con un formato prefijo no? podemos modificarlo??"*
+- *"primero, agrega el logo y pie de pagina."*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, constantes UPPER, metodos privados con _)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 19.3 Logo y pie de pagina en PDF (formato prefijo modificable)
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - Constantes `NOMBRE_LOGO_PDF`, `TEXTO_PIE_PDF`; `_ruta_logo_pdf()` busca `Img/intresta-logo-horizontal.png` (320x75).
+    - `_parte_logo_pdf()` retorna `ImagenPDF(180x42)+Spacer` o vacio si no existe; se antepone al titulo en `exportar_tabla_pdf()` y `exportar_comparativa_pdf()`.
+    - `_dibujar_pie_pdf(lienzo,doc)` con `Helvetica 7 gris`: izquierda `Generado por Intresta... | dd/mm/yyyy hh:mm`, derecha `Pag. N`; se pasa como `onFirstPage/onLaterPages` en ambos `doc.build()`.
+  - **Formato prefijo vigente:** A4 vertical, logo, titulo, resumen, tabla morada #380057 zebra, grafica, pie en todas las paginas.
+  - **Verificacion:** `py_compile` OK; `logo_pie.pdf` (37999 B) y `logo_pie_comp.pdf` (75741 B); `_ruta_logo_pdf()` resuelve al png real.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ok, dime que tipo de letra usas en los formatos? el mismo que el logo?"*
+- *"ok, en los titulos de los pdf y excel usa el mismo que el logo, ya lo que no sea tabla ni grafica, usa arial"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, constantes UPPER, metodos privados con _)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 19.4 Titulos Segoe UI y resto Arial en PDF/Excel
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - Constantes `FUENTE_TITULO_EXCEL="Segoe UI"`, `FUENTE_TEXTO_EXCEL="Arial"`; `_registrar_fuentes_pdf()` registra `segoeuib.ttf` como `SegoeUI-Bold` y `arial.ttf/bd` desde `C:/Windows/Fonts` con fallback `Helvetica`.
+    - `_estilos_pdf()`: `Title` en `SegoeUI-Bold` morado, `Normal` en `Arial`, `Heading2` en `Arial-Bold`; pie en `Arial 7`.
+    - Excel tabla: `A1` titulo `Segoe UI 14 bold morado`; `A2` resumen `Arial 10`; totales en `Arial`; cabecera/datos de tabla sin cambio.
+    - Excel comparativa: titulo principal `Segoe UI 14`, titulos A/B `Segoe UI 11 bold`, resumen/diferencia `Arial`.
+    - Tabla y grafica conservan su fuente (tabla Helvetica/Calibri, grafica DejaVu Sans).
+  - **Verificacion:** `py_compile` OK; `FUENTE_TITULO_PDF=SegoeUI-Bold`, `TEXTO=Arial`; `fuente.xlsx A1=Segoe UI bold`, `A2=Arial`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ahora, el pie de pagina ponle un fondo, el mismo color morado de el logo y las letras y logo de la parte superior del emcabezado, quitalas del cuerpo y ponlas en el lugar de encabezado. Ojo, las letras a un lado de el logo son blancas y no se distingen, igual de color morado o amarillo si le pones un fondo morado."*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/exportar.py`
+
+#### 19.5 Encabezado y pie morados con logo en PDF
+- **Descripcion de lo que hace el codigo:**
+  - **`exportar.py`:**
+    - Constantes `COLOR_MORADO_PDF="#380057"`, `COLOR_AMARILLO_PDF="#E5DE4B"`, `ALTURA_ENCABEZADO_PDF=62`, `ALTURA_PIE_PDF=30`.
+    - `_fabrica_decoracion_pdf(titulo)` dibuja en cada pagina: rect morado superior, `drawImage` logo 120x28 en `(40, alto-52)`, titulo en `SegoeUI-Bold 12` amarillo a la derecha; rect morado inferior con pie blanco `Arial 7` + `Pag. N`.
+    - Cuerpo sin logo/titulo: `exportar_tabla_pdf()` y `comparativa` inician en resumen con `topMargin=85, bottomMargin=45`; `_parte_logo_pdf()` queda vacia por compat.
+    - Letras blancas del logo visibles sobre fondo morado; titulo amarillo legible sobre morado.
+  - **Verificacion:** `py_compile` OK; `hdr_tabla.pdf` (128457 B, 12 filas) y `hdr_comp.pdf` (160644 B).
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ya en la aplicacion, podrias modificar un detalle, quiero que donde esta el boton del tema de la aplicacion, lo quites y pongas un boton que sean unas rallitas horizontales qeu me despliege a la izquierda una barra vertical que diga, area de trabajo y sea lo que esta al iniciar la app, después, historial (quitas el boton de historial del area principal) y muestre el historial y al ultimo configuracion y de meiestras pones el boton del tema"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/ventana.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python)
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, metodos privados con _, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador: ejecutar directo)
+
+#### 20. Menu hamburguesa con barra lateral (Area / Historial / Config)
+- **Unidad II (2.1.7 Modulos y Organizacion):** *Navegacion lateral con vistas conmutables sin tocar el nucleo C++.*
+- **Descripcion de lo que hace el codigo:**
+  - **`ventana.py`:**
+    - Header: boton `☰` (`Tema.TButton`, `command=_alternar_barra_lateral`) + logo a la izquierda, titulo a la derecha sin boton de tema.
+    - `_construir_barra_lateral()`: botones verticales `Area de trabajo`, `Historial`, `Configuracion` en `botones_menu`.
+    - Vistas: `marco_vista_area` con `cuaderno_principal` de 2 tabs (Calcular, Comparar); `marco_vista_historial` con `_construir_apartado_tres()` fuera del notebook; `marco_vista_config` con boton `var_texto_tema`.
+    - `_mostrar_vista()` conmuta con `grid/grid_remove` y marca `pressed`; `_alternar_barra_lateral()` pliega/despliega; `_cargar_historial_en_ventana()` vuelve a `area` y `select(0)`.
+  - **Verificacion:** `py_compile` OK; instanciacion Tk retirada OK: `vista=area`, tabs `['Calcular Tabla','Comparar']`, conmutacion historial/config OK, sidebar toggle False/True, botones `area/config/historial`.
+
+---
+
+### Fecha: 11 de octubre de 2026
+
+**Prompts:**
+- *"ok, el titulo que dice "Simulador de Intereses y Amortizaciones" hazlo mas grande sin desplazar el entorno de trabajo"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/ventana.py`
+
+#### 20.1 Titulo mas grande con encabezado fijo
+- **Descripcion de lo que hace el codigo:**
+  - **`ventana.py`:**
+    - `Titulo.TLabel` pasa de `Segoe UI 16 bold` a `22 bold`.
+    - `marco_header` con `height=80` y `pack_propagate(False)`: el area de trabajo inicia siempre tras 80px fijos, el titulo crece centrado (`anchor=E`) sin empujar el contenido.
+  - **Verificacion:** `py_compile` OK; Tk retirada: `fuente={Segoe UI} 22 bold`, `alto header=80`, `vista=area`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompts:**
+- *"listo, dime tres ideas que pueda añadir a mi proyecto que complementen con el objetivo de la app"*
+- *"explicame mas sobre como implementarias el tema 2 y 3"*
+- *"ok, pero me referia en que consistia la idea no como se programa y sobre todo como funciona"*
+- *"ok, implementemos la idea 3"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/indicadores.py` (nuevo)
+- `simulador_prestamos/gui/ventana.py`
+- `simulador_prestamos/gui/exportar.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, constantes UPPER, metodos privados con _)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 21. Panel de indicadores (% interes, min-max, cruce, tasa efectiva)
+- **Unidad II (2.1.7 Modulos) y Unidad III (3.1 sum/min/max/next/filter):** *Modulo puro reutilizable sin tocar C++.*
+- **Descripcion de lo que hace el codigo:**
+  - **`indicadores.py`:**
+    - `calcular_indicadores(lista, tasa)` con `sum/min/max/next`: total, `%`, `mes_cruce` (primer `capital>interes`), `tasa_efectiva=((1+tasa/12)^12-1)*100`; `formatear_mes_cruce()` ("Mes N"/"Sin cruce"); vacio retorna ceros.
+  - **`ventana.py`:**
+    - Nuevas `var_porc_interes`, `var_cuota_rango`, `var_mes_cruce`, `var_tasa_efectiva`; seccion `Indicadores` bajo Resumen; `_actualizar_resumen(lista, tasa)` las llena; `_evento_limpiar()` las resetea; historial y calcular pasan la tasa.
+  - **`exportar.py`:**
+    - `_linea_indicadores()` en PDF tabla/comparativa (Arial) y Excel (`A3` italica + bloques A/B); tabla y grafica intactas.
+  - **Verificacion:** `py_compile` OK; `OK_IND` (cruce Mes 2, efectiva 12.68%); UI (`% 44.4%, cruce Mes 2`); `ind.xlsx A3` con linea + 1 imagen.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompts:**
+- *"como verifico su implementacion?"*
+- *"ok, aparece indicadores pero no la informacion, parece ser que no se despliega la informacion por el espacio o dime y resuelvelo"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/ventana.py`
+
+#### 21.1 Panel izquierdo con scroll (indicadores recortados)
+- **Causa:** sin scroll, la seccion nueva quedaba bajo el alto fijo de 720px y se recortaba.
+- **Descripcion de lo que hace el codigo:**
+  - **`ventana.py`:**
+    - `_construir_panel_formulario()` envuelve el contenido en `lienzo_formulario` (`Canvas`) + `Scrollbar` vertical + `marco_interno`; `scrollregion` auto, ancho sincronizado por tag `ventana_form` y scroll con rueda (`<MouseWheel>`).
+    - `_refrescar_tema()` repinta el lienzo con `tarjeta` del tema activo.
+  - **Verificacion:** `py_compile` OK; Tk retirada: `scrollregion=0 0 218 613` (con scroll activo), indicadores `% 44.4% | Mes 2`, tema claro repinta `#CFCFCF`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompts:**
+- *"ok, ahora implementemos el tema 2 de los abonos"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/core_cpp/amortizacion.hpp`
+- `simulador_prestamos/core_cpp/amortizacion.cpp`
+- `simulador_prestamos/core_cpp/main.cpp`
+- `simulador_prestamos/core_cpp/amortizador.exe` (recompilado)
+- `simulador_prestamos/gui/ventana.py`
+- `simulador_prestamos/gui/exportar.py`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (nucleo funcional C++, orquestador Python)
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, `_privadas`, constantes UPPER, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 22. Abonos extra a capital (paga antes, paga menos interes)
+- **Unidad II (funciones puras, inmutabilidad) y Unidad III (3.1 sum/min):** *Extension pura del nucleo + orquestacion sin estado global.*
+- **Descripcion de lo que hace el codigo:**
+  - **C++ (`amortizacion.hpp/.cpp`, `main.cpp`):**
+    - `struct AbonoExtra{num_mes, val_monto}`; `buscar_abono_mes()` suma abonos del mes; `parsear_abonos("3:1000,6:500")` tolerante a errores.
+    - `generar_tabla_{frances,aleman,americano}_con_abonos()`: iteran con saldo ajustado, aplican `min(abono, saldo)`, truncan al liquidar (menos filas = meses ahorrados); vacio delega a la original.
+    - `main` acepta 5to arg opcional, valida mes 1..plazo y usa la variante con abonos.
+  - **`ventana.py`:**
+    - `formatear_abonos_cli()` + `calcular_amortizacion(..., lista_abonos)`; seccion `Abonos Extra` (mes/monto, Agregar/Quitar, `Listbox`, `var_ahorro_abonos`); `_agregar/_quitar/_refrescar_lista_abonos()` validan contra el plazo.
+    - `_evento_calcular()` calcula base y con abonos, muestra esta ultima, auto-fija A=sin y B=con en Comparar con `_fijar_comparativa_abonos()` (ahorro `$` + meses menos); titulos con `+N abonos`; `_evento_limpiar()` resetea; historial guarda/recarga abonos (`+N abonos` en el boton).
+  - **`exportar.py`:** `_texto_abonos()` en `_texto_resumen()` y `_titulo_escenario()`; `_linea_indicadores()` intacta.
+  - **Verificacion:** `g++` recompila sin warnings; base 661.86 vs abono 570.22 (11 filas, cuota m3 1888.49); aleman/americano/payoff(1 fila)/error mes 99 OK; UI `Ahorro: $91.64 y 1 meses menos`; `abono.pdf` con `Abonos: m3`.
+
+---
+
+### Fecha: 12 de octubre de 2026
+
+**Prompts:**
+- *"ok, analiza la carpeta Roles_and_skills y procederemos con las modificaciones"*
+- *"ok, recomiendame que puedo añadir en el apartado de configuracion"*
+- *"ok, añadamos el tamaño de letra tambien el formato de los numeros y los defaults Exportacion"*
+
+**Archivos involucrados:**
+- `simulador_prestamos/gui/configuracion.py` (nuevo)
+- `simulador_prestamos/gui/ventana.py`
+- `simulador_prestamos/gui/exportar.py`
+- `simulador_prestamos/config.json`
+
+**Archivos usados de Planificacion_proyecto y Roles_and_skills:**
+- `Planificacion_proyecto/Arquitectura_Simulador_Prestamos.md` (orquestador Python, nucleo C++ intacto)
+- `Planificacion_proyecto/bitacora.md`
+- `Roles_and_skills/rules.md` (snake_case, `_privadas`, constantes UPPER, formato headers/funciones/proceso)
+- `Roles_and_skills/skills.md` (rol Programador)
+
+#### 23. Configuracion ampliada (letra, formato numeros, defaults exportacion)
+- **Unidad II (2.1.7 Modulos) y Unidad III (3.1 zip/sorted):** *Nuevo modulo puro de preferencias + orquestacion con estado persistente.*
+- **Descripcion de lo que hace el codigo:**
+  - **`configuracion.py`:**
+    - `CONFIG_POR_DEFECTO` (tema, tamano, decimales, moneda, carpeta, logo/pie); `cargar_configuracion()` mezcla JSON con defecto y normaliza; `guardar_configuracion()`; `obtener_ajuste_fuente()` (-2/0/+2); `formatear_moneda()` (`$, MXN, USD` con 0/1/2 decimales).
+  - **`ventana.py`:**
+    - `__init__` carga config y aplica tema guardado; `_configurar_estilos()` escala fuentes con `num_ajuste`; `_formatear_moneda()` centraliza `$` en tabla, resumen, comparar A/B, abonos e historial.
+    - `_construir_vista_config()` con 3 secciones: Apariencia (tema + `Pequeña/Normal/Grande`), Formato (decimales + moneda), Exportacion (carpeta + Examinar, checks logo/pie, Restablecer); `_aplicar_configuracion()` re-renderiza y guarda en `config.json`; `_evento_exportar()` usa `initialdir` y pasa decimales/simbolo/logo/pie.
+  - **`exportar.py`:**
+    - `_formatear_moneda_export()` y `_formato_num_excel()`; 4 exports aceptan `num_decimales/simbolo_moneda`; PDF aceptan `incluir_logo/incluir_pie` en `_fabrica_decoracion_pdf()`.
+  - **Verificacion:** `py_compile` OK; `cargar` defecto + `USD 1,234` con 0 dec; `cfg_tabla.xlsx/pdf` y `cfg_comp.xlsx/pdf` generados; Tk retirada `OK_UI_CONFIG` (Grande guarda, `USD 1,234`, `carpeta None`); `config.json` restablecido a defecto.
+
+---
 
