@@ -5,6 +5,11 @@ import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+try:
+    from gui.configuracion import obtener_color_esquema, obtener_color_nombre
+except ImportError:
+    from simulador_prestamos.gui.configuracion import obtener_color_esquema, obtener_color_nombre
+
 # ==========================================
 # Declaracion de Constantes
 # ==========================================
@@ -78,6 +83,38 @@ def establecer_modo_graficas(modo_tema: str):
     COLOR_INTERES = paleta["interes"]
     COLOR_ESCENARIO_A = paleta["esc_a"]
     COLOR_ESCENARIO_B = paleta["esc_b"]
+
+
+def establecer_esquema_graficas(str_esquema: str, str_modo: str = "oscuro"):
+    """Aplica el esquema de color elegido a las gráficas de matplotlib."""
+    establecer_modo_graficas(str_modo)
+    if str_esquema == "Intresta":
+        return
+    color = obtener_color_esquema(str_esquema)
+    global COLOR_FRANCES, COLOR_CAPITAL, COLOR_ESCENARIO_A
+    COLOR_FRANCES = color
+    COLOR_CAPITAL = color
+    COLOR_ESCENARIO_A = color
+
+def establecer_colores_personalizados(dict_config: dict, str_modo: str = "oscuro"):
+    """Aplica a matplotlib el color elegido por el usuario para cada serie."""
+    establecer_modo_graficas(str_modo)
+    colores = {
+        "saldo": obtener_color_nombre(dict_config.get("color_saldo", "Azul")),
+        "capital": obtener_color_nombre(dict_config.get("color_capital", "Verde")),
+        "interes": obtener_color_nombre(dict_config.get("color_intereses", "Rojo")),
+        "credito": obtener_color_nombre(dict_config.get("color_creditos", "Amarillo")),
+    }
+    global COLOR_FRANCES, COLOR_ALEMAN, COLOR_AMERICANO
+    global COLOR_CAPITAL, COLOR_INTERES, COLOR_ESCENARIO_A, COLOR_ESCENARIO_B
+    COLOR_FRANCES = colores["saldo"]
+    COLOR_ESCENARIO_A = colores["saldo"]
+    COLOR_ALEMAN = colores["capital"]
+    COLOR_CAPITAL = colores["capital"]
+    COLOR_AMERICANO = colores["interes"]
+    COLOR_INTERES = colores["interes"]
+    COLOR_ESCENARIO_B = colores["credito"]
+
 
 # ==========================================
 # Declaracion de Funciones de Graficacion

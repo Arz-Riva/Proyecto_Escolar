@@ -66,6 +66,20 @@ def _registrar_fuentes_pdf():
 
 _registrar_fuentes_pdf()
 
+
+def establecer_fuentes_pdf(str_fuente: str):
+    """Configura las fuentes usadas en el PDF según la preferencia del usuario."""
+    global FUENTE_TITULO_PDF, FUENTE_TEXTO_PDF
+    fuentes = {
+        "Segoe UI": ("SegoeUI-Bold", "Arial"),
+        "Arial": ("Arial-Bold", "Arial"),
+        "Helvetica": ("Helvetica-Bold", "Helvetica"),
+    }
+    titulo, texto = fuentes.get(str_fuente, fuentes["Segoe UI"])
+    FUENTE_TITULO_PDF = titulo
+    FUENTE_TEXTO_PDF = texto
+
+
 # ==========================================
 # Declaracion de Funciones
 # ==========================================
@@ -554,4 +568,56 @@ def exportar_comparativa_pdf(lista_a: list[dict], params_a: dict,
             os.remove(ruta_png)
         except Exception:
             pass
+    return os.path.abspath(ruta_archivo)
+
+
+
+def exportar_resumen_chat_excel(cad_resumen: str, ruta_archivo: str) -> str:
+    """Exporta el resumen ejecutivo del chat de IA a un archivo Excel (.xlsx)."""
+    if not cad_resumen or not cad_resumen.strip():
+        raise ValueError("No hay resumen de chat para exportar.")
+    libro = Workbook()
+    hoja = libro.active
+    hoja.title = "Resumen Chat IA"
+    hoja.append(["Intresta - Resumen del Asesor Financiero IA"])
+    hoja["A1"].font = Font(name=FUENTE_TITULO_EXCEL, bold=True, size=14, color=COLOR_CABECERA_EXCEL)
+    hoja.append(["Puntos clave y conclusiones principales de la conversación:"])
+    hoja["A2"].font = Font(name=FUENTE_TEXTO_EXCEL, size=10, italic=True)
+    hoja.append([])
+    for linea in cad_resumen.strip().split("\n"):
+        hoja.append([linea])
+        hoja.cell(row=hoja.max_row, column=1).font = Font(name=FUENTE_TEXTO_EXCEL, size=10)
+    hoja.column_dimensions["A"].width = 95
+    libro.save(ruta_archivo)
+    return os.path.abspath(ruta_archivo)
+
+
+def exportar_resumen_chat_pdf(cad_resumen: str, ruta_archivo: str,
+                              incluir_logo: bool = True, incluir_pie: bool = True) -> str:
+    """Exporta el resumen ejecutivo del chat de IA a un archivo PDF formal."""
+    if not cad_resumen or not cad_resumen.strip():
+        raise ValueError("No hay resumen de chat para exportar.")
+    doc = SimpleDocTemplate(ruta_archivo, pagesize=A4, topMargin=85, bottomMargin=45)
+    estilos = _estilos_pdf()
+    texto_seguro = (cad_resumen.strip()
+                    .replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                    .replace("\n", "<br/>"))
+    tabla_resumen = Table([[Paragraph(texto_seguro, estilos["Normal"])]], colWidths=[515])
+    tabla_resumen.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F6F0FA")),
+        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#380057")),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ]))
+    partes = [
+        Paragraph("Resumen Ejecutivo del Asesor IA", estilos["Heading2"]),
+        Spacer(1, 8),
+        tabla_resumen,
+    ]
+    decorar = _fabrica_decoracion_pdf("Resumen de Asesoria IA", incluir_logo, incluir_pie)
+    doc.build(partes, onFirstPage=decorar, onLaterPages=decorar)
     return os.path.abspath(ruta_archivo)

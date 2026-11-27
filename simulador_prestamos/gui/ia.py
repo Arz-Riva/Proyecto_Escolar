@@ -17,12 +17,13 @@ except ImportError:
 # ==========================================
 # Declaracion de Constantes
 # ==========================================
-MODELO_GEMINI_DEFAULT = "gemini-2.0-flash"
+MODELO_GEMINI_DEFAULT = "gemini-3.1-flash-lite"
 MODELOS_DISPONIBLES = [
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-3.1-pro-preview",
+    "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
-    "gemini-1.5-pro",
+    "gemini-2.0-flash",
 ]
 TEMPERATURA_DEFAULT = 0.2
 MAX_TOKENS_DEFAULT = 1500
@@ -88,7 +89,10 @@ def _obtener_cliente_gemini(cad_api_key: Optional[str] = None):
             "Configura la variable de entorno GEMINI_API_KEY o añade 'api_key' en config.json."
         )
 
-    return genai.Client(api_key=clave_final)
+    return genai.Client(
+        api_key=clave_final,
+        http_options=types.HttpOptions(timeout=20000),
+    )
 
 
 # ==========================================
@@ -132,27 +136,27 @@ def llamar_api(
                 if respuesta and respuesta.text:
                     _modelo_activo_cache = str_modelo
                     return respuesta.text.strip()
+                ultimo_error = RuntimeError(f"El modelo {str_modelo} devolvió una respuesta vacía.")
+                continue
             except Exception as error_intento:
                 ultimo_error = error_intento
                 cad_error = str(error_intento)
-                # Si la clave es invalida, reportar inmediatamente
-                if "API_KEY_INVALID" in cad_error or "invalid api key" in cad_error.lower() or "permission_denied" in cad_error.lower():
-                    return f"[Error de Clave de API]: La clave de Gemini no es válida o no tiene permisos. Detalle: {cad_error}"
-
-                # Si el modelo no existe (404), esta saturado (503), o excede limite de tasa (429), prueba el siguiente
+                cad_lower = cad_error.lower()
+                # Solo abortar de inmediato si la clave de API es invalida o no autenticada
                 if (
-                    "503" in cad_error
-                    or "UNAVAILABLE" in cad_error
-                    or "high demand" in cad_error.lower()
-                    or "429" in cad_error
-                    or "RESOURCE_EXHAUSTED" in cad_error
-                    or "404" in cad_error
-                    or "NOT_FOUND" in cad_error
+                    "api_key_invalid" in cad_lower
+                    or "invalid api key" in cad_lower
+                    or "unauthenticated" in cad_lower
+                    or "401" in cad_error
                 ):
-                    continue
+                    return (
+                        "[Error de Clave de API]: La clave de Gemini en Configuración / config.json no es válida "
+                        "o no tiene permisos. "
+                        f"Detalle: {cad_error}"
+                    )
 
-                # Otros errores imprevistos
-                return f"[Error en Servicio IA]: {cad_error}"
+                # Ante cualquier otro error (404, 400, 403, 429, 500, 503, timeout, etc.), probar el siguiente modelo
+                continue
 
         # Descubrimiento dinamico: Si los modelos fijos no respondieron, consultar directamente los modelos de la cuenta
         try:
@@ -167,7 +171,7 @@ def llamar_api(
                     if nom not in modelos_remotos:
                         modelos_remotos.append(nom)
 
-            for str_modelo_remoto in modelos_remotos:
+            for str_modelo_remoto in modelos_remotos[:3]:
                 try:
                     respuesta = cliente.models.generate_content(
                         model=str_modelo_remoto,
@@ -213,9 +217,9 @@ def explicar_tabla_amortizacion(
         mitad = lista_tabla[len(lista_tabla) // 2]
         detalles_tabla = (
             f"\nMuestras de la tabla calculada:"
-            f"\n- Periodo inicial (Mes {primera.get('periodo', 1)}): Cuota ${primera.get('cuota', 0):,.2f}, Interés ${primera.get('interes', 0):,.2f}, Capital ${primera.get('capital', 0):,.2f}"
-            f"\n- Periodo medio (Mes {mitad.get('periodo', len(lista_tabla)//2)}): Cuota ${mitad.get('cuota', 0):,.2f}, Interés ${mitad.get('interes', 0):,.2f}, Capital ${mitad.get('capital', 0):,.2f}"
-            f"\n- Periodo final (Mes {ultima.get('periodo', len(lista_tabla))}): Cuota ${ultima.get('cuota', 0):,.2f}, Interés ${ultima.get('interes', 0):,.2f}, Capital ${ultima.get('capital', 0):,.2f}"
+            f"\n- Periodo inicial (Mes {primera.get('mes', primera.get('periodo', 1))}): Cuota ${primera.get('cuota', 0):,.2f}, Interés ${primera.get('interes', 0):,.2f}, Capital ${primera.get('capital', 0):,.2f}"
+            f"\n- Periodo medio (Mes {mitad.get('mes', mitad.get('periodo', len(lista_tabla)//2))}): Cuota ${mitad.get('cuota', 0):,.2f}, Interés ${mitad.get('interes', 0):,.2f}, Capital ${mitad.get('capital', 0):,.2f}"
+            f"\n- Periodo final (Mes {ultima.get('mes', ultima.get('periodo', len(lista_tabla)))}): Cuota ${ultima.get('cuota', 0):,.2f}, Interés ${ultima.get('interes', 0):,.2f}, Capital ${ultima.get('capital', 0):,.2f}"
         )
 
     cad_prompt = f"""
@@ -277,6 +281,60 @@ INSTRUCCIONES:
     return llamar_api(cad_prompt)
 
 
+def consultar_plan_ia(
+    cad_pregunta_usuario: str,
+    dict_plan: Dict[str, Any],
+    lista_flujo: Optional[List[Dict[str, Any]]] = None
+) -> str:
+    """Responde consultas usando el plan financiero completo, mes por mes."""
+    resumen = dict_plan.get("resumen", {}) if isinstance(dict_plan, dict) else {}
+    creditos = dict_plan.get("creditos", []) if isinstance(dict_plan, dict) else []
+    lineas = [
+        "CONTEXTO DEL PLAN FINANCIERO DEL USUARIO:",
+        f"- Nombre del plan: {dict_plan.get('nombre', 'N/D')}",
+        f"- Duración: {dict_plan.get('duracion_meses', 0)} meses",
+        f"- Ingreso fijo mensual: ${float(dict_plan.get('ingreso_fijo', 0)):,.2f}",
+        f"- Egreso fijo mensual: ${float(dict_plan.get('egreso_fijo', 0)):,.2f}",
+        f"- Total ingresos capturados: ${float(resumen.get('total_ingresos', 0)):,.2f}",
+        f"- Total egresos capturados: ${float(resumen.get('total_gastos', 0)):,.2f}",
+        f"- Cuota mensual de créditos: ${float(resumen.get('total_cuotas', 0)):,.2f}",
+        f"- Balance del plan: ${float(resumen.get('balance_total', 0)):,.2f}",
+        f"- Balance mensual promedio: ${float(resumen.get('balance_mensual', 0)):,.2f}",
+        f"- Endeudamiento: {float(resumen.get('ratio_endeudamiento', 0)):.2f}% del ingreso",
+    ]
+    for credito in creditos:
+        lineas.append(
+            f"- Crédito '{credito.get('concepto', 'Crédito')}': "
+            f"{credito.get('sistema', 'N/D')}, monto ${float(credito.get('monto', 0)):,.2f}, "
+            f"tasa {credito.get('tasa_anual', 0)}%, plazo {credito.get('meses', 0)} meses, "
+            f"cuota ${float(credito.get('cuota_mensual', 0)):,.2f}, "
+            f"intereses ${float(credito.get('total_interes', 0)):,.2f}"
+        )
+    for fila in (lista_flujo or []):
+        ingresos = ", ".join(
+            f"{item.get('concepto', '')}: ${float(item.get('monto', 0)):,.2f}"
+            for item in fila.get("ingresos_detalle", [])
+        ) or "sin ingresos extra"
+        egresos = ", ".join(
+            f"{item.get('concepto', '')}: ${float(item.get('monto', 0)):,.2f}"
+            for item in fila.get("egresos_detalle", [])
+        ) or "sin gastos extra"
+        lineas.append(
+            f"- Mes {fila.get('mes')} (Año {fila.get('anio')}): "
+            f"ingresos ${float(fila.get('ingresos', 0)):,.2f} [{ingresos}], "
+            f"gastos ${float(fila.get('egresos', 0)):,.2f} [{egresos}], "
+            f"pago crédito ${float(fila.get('pago_credito', 0)):,.2f}, "
+            f"saldo neto ${float(fila.get('saldo_neto', 0)):,.2f}, "
+            f"saldo crédito ${float(fila.get('saldo_credito', 0)):,.2f}"
+        )
+    cad_prompt = (
+        "\n".join(lineas)
+        + f"\n\nPREGUNTA DEL USUARIO:\n\"{cad_pregunta_usuario}\"\n\n"
+        + "Responde apoyándote estrictamente en los datos del plan y de sus movimientos mensuales."
+    )
+    return llamar_api(cad_prompt)
+
+
 def simular_escenario_personalizado(
     cad_pregunta_usuario: str,
     dict_resumen: Dict[str, Any],
@@ -303,3 +361,34 @@ CONTEXTO DEL ESCENARIO ACTUAL DEL USUARIO:
         f"Responde a su duda financiera apoyándote estrictamente en los datos del escenario."
     )
     return llamar_api(cad_prompt_completo)
+
+
+
+def resumir_chat_ia(lista_mensajes: List[Dict[str, str]]) -> str:
+    """
+    Extrae y resume lo más importante y crucial de la conversación del chat
+    para incluirlo en reportes PDF o Excel.
+    """
+    mensajes_utiles = [
+        m for m in (lista_mensajes or [])
+        if m.get("rol") in ("usuario", "ia") and str(m.get("texto", "")).strip()
+    ]
+    if not mensajes_utiles:
+        raise ValueError("No hay conversación suficiente en el chat para resumir.")
+
+    conversacion = []
+    for mensaje in mensajes_utiles:
+        etiqueta = "Usuario" if mensaje.get("rol") == "usuario" else "Asesor IA"
+        conversacion.append(f"{etiqueta}: {mensaje.get('texto', '').strip()}")
+
+    cad_prompt = (
+        "Resume ÚNICAMENTE lo más importante y crucial de la siguiente conversación financiera "
+        "entre el usuario y el asesor.\n\n"
+        "REGLAS DE FORMATO:\n"
+        "- Sé breve, claro y directo (máximo 6 a 8 viñetas).\n"
+        "- Incluye las cifras clave, conclusiones, comparativas y recomendaciones principales.\n"
+        "- No uses etiquetas Markdown complejas (evita **, ## o tablas); usa texto limpio con guiones '- '.\n\n"
+        "CONVERSACIÓN:\n"
+        + "\n\n".join(conversacion)
+    )
+    return llamar_api(cad_prompt)

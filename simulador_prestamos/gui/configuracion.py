@@ -11,6 +11,38 @@ NOMBRE_ARCHIVO_CONFIG = "config.json"
 OPCIONES_TAMANO_LETRA = ["Pequeña", "Normal", "Grande"]
 OPCIONES_DECIMALES = [0, 1, 2]
 OPCIONES_MONEDA = ["$", "MXN ", "USD "]
+FUENTES_DISPONIBLES = ["Segoe UI", "Arial", "Calibri", "Consolas", "Verdana"]
+ESQUEMAS_GRAFICAS = {
+    "Intresta": "#64B5F6",
+    "Azul": "#1976D2",
+    "Verde": "#2E7D32",
+    "Naranja": "#EF6C00",
+    "Morado": "#9C27B0",
+    "Personalizado": "#64B5F6",
+}
+FUENTES_PDF = ["Segoe UI", "Arial", "Helvetica"]
+COLORES_DISPONIBLES = {
+    "Verde": "#66BB6A",
+    "Rojo": "#EF5350",
+    "Amarillo": "#E5DE4B",
+    "Azul": "#64B5F6",
+    "Rosa": "#EC407A",
+    "Morado": "#AB47BC",
+    "Naranja": "#FF7043",
+    "Cian": "#26C6DA",
+    "Blanco": "#FFFFFF",
+    "Gris": "#9E9E9E",
+    "Lima": "#AED581",
+    "Magenta": "#FF4081",
+}
+COLORES_GRAFICAS_DEFECTO = {
+    "ingresos": "Verde",
+    "egresos": "Rojo",
+    "creditos": "Amarillo",
+    "saldo": "Azul",
+    "intereses": "Rojo",
+    "capital": "Verde",
+}
 
 CONFIG_POR_DEFECTO = {
     "tema": "oscuro",
@@ -21,6 +53,17 @@ CONFIG_POR_DEFECTO = {
     "incluir_logo_pdf": True,
     "incluir_pie_pdf": True,
     "api_key": "",
+    "fuente_app": "Segoe UI",
+    "color_graficas": "Intresta",
+    "decimales_pdf": 2,
+    "fuente_pdf": "Segoe UI",
+    "color_graficas_pdf": "Intresta",
+    "color_ingresos": "Verde",
+    "color_egresos": "Rojo",
+    "color_creditos": "Amarillo",
+    "color_saldo": "Azul",
+    "color_intereses": "Rojo",
+    "color_capital": "Verde",
 }
 
 MAPEO_AJUSTE_FUENTE = {
@@ -63,7 +106,31 @@ def cargar_configuracion() -> dict:
         dict_config["simbolo_moneda"] = "$"
     if dict_config.get("tema") not in ("claro", "oscuro"):
         dict_config["tema"] = "oscuro"
+    if dict_config.get("fuente_app") not in FUENTES_DISPONIBLES:
+        dict_config["fuente_app"] = "Segoe UI"
+    if dict_config.get("color_graficas") not in ESQUEMAS_GRAFICAS:
+        dict_config["color_graficas"] = "Intresta"
+    if dict_config.get("decimales_pdf") not in OPCIONES_DECIMALES:
+        dict_config["decimales_pdf"] = 2
+    if dict_config.get("fuente_pdf") not in FUENTES_PDF:
+        dict_config["fuente_pdf"] = "Segoe UI"
+    if dict_config.get("color_graficas_pdf") not in ESQUEMAS_GRAFICAS:
+        dict_config["color_graficas_pdf"] = "Intresta"
+    for clave, valor_defecto in COLORES_GRAFICAS_DEFECTO.items():
+        clave_config = f"color_{clave}"
+        if dict_config.get(clave_config) not in COLORES_DISPONIBLES:
+            dict_config[clave_config] = valor_defecto
     return dict_config
+
+
+def obtener_color_esquema(str_esquema: str) -> str:
+    """Retorna el color hexadecimal asociado a un esquema de gráficas."""
+    return ESQUEMAS_GRAFICAS.get(str_esquema, ESQUEMAS_GRAFICAS["Intresta"])
+
+
+def obtener_color_nombre(str_nombre: str) -> str:
+    """Retorna el hexadecimal de un color elegido por el usuario."""
+    return COLORES_DISPONIBLES.get(str_nombre, COLORES_DISPONIBLES["Azul"])
 
 
 def guardar_configuracion(dict_config: dict) -> str:
