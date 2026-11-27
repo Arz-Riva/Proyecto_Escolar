@@ -24,3 +24,7 @@ __pycache__/
 *.json
 *.md
 **/__pycache__/
+
+# Archivos generados/locales en el simulador
+simulador_prestamos/.gitignore
+*.pdf
