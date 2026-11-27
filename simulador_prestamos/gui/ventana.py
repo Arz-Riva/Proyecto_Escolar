@@ -4,6 +4,7 @@
 import os
 import json
 import subprocess
+import threading
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
@@ -22,6 +23,8 @@ try:
                                    obtener_ajuste_fuente, formatear_moneda,
                                    OPCIONES_TAMANO_LETRA, OPCIONES_DECIMALES,
                                    OPCIONES_MONEDA)
+    from gui.ia import (explicar_tabla_amortizacion, comparar_sistemas,
+                        simular_escenario_personalizado)
 except ImportError:
     try:
         from simulador_prestamos.gui.graficas import (
@@ -38,6 +41,8 @@ except ImportError:
                                                            obtener_ajuste_fuente, formatear_moneda,
                                                            OPCIONES_TAMANO_LETRA, OPCIONES_DECIMALES,
                                                            OPCIONES_MONEDA)
+        from simulador_prestamos.gui.ia import (explicar_tabla_amortizacion, comparar_sistemas,
+                                                simular_escenario_personalizado)
     except ImportError:
         from graficas import (
             generar_figura_relacion_interes_capital,
@@ -52,6 +57,8 @@ except ImportError:
                                    obtener_ajuste_fuente, formatear_moneda,
                                    OPCIONES_TAMANO_LETRA, OPCIONES_DECIMALES,
                                    OPCIONES_MONEDA)
+        from ia import (explicar_tabla_amortizacion, comparar_sistemas,
+                        simular_escenario_personalizado)
 
 
 
@@ -247,6 +254,15 @@ class AplicacionSimulador:
             self._actualizar_grafica_comparar()
         if hasattr(self, "marco_filas_historial"):
             self._actualizar_vista_historial()
+        if hasattr(self, "caja_texto_chat"):
+            self.caja_texto_chat.configure(
+                bg=col["campo"], fg=col["texto_claro"],
+                insertbackground=col["texto_claro"], selectbackground=col["seleccion"]
+            )
+            self.caja_texto_chat.tag_configure("usuario", foreground=col["secundario"])
+            self.caja_texto_chat.tag_configure("ia", foreground=col["primario"])
+            self.caja_texto_chat.tag_configure("texto", foreground=col["texto_claro"])
+            self.caja_texto_chat.tag_configure("sistema", foreground=col["texto_suave"])
 
     def _configurar_ventana(self):
         """Ajusta las propiedades globales, iconos y titulo de la ventana."""
@@ -453,6 +469,12 @@ class AplicacionSimulador:
         self.var_carpeta_export = tk.StringVar(value=self.dict_config.get("carpeta_exportacion", ""))
         self.var_incluir_logo = tk.BooleanVar(value=bool(self.dict_config.get("incluir_logo_pdf", True)))
         self.var_incluir_pie = tk.BooleanVar(value=bool(self.dict_config.get("incluir_pie_pdf", True)))
+
+        # Estado del Asesor de Inteligencia Artificial (IA)
+        self.cad_opinion_ia = ""
+        self.var_pregunta_ia = tk.StringVar(value="")
+        self.var_estado_ia = tk.StringVar(value="Listo.")
+        self.esta_procesando_ia = False
 
         # Estado de navegacion lateral (hamburguesa)
         self.vista_actual = "area"
@@ -1289,6 +1311,11 @@ class AplicacionSimulador:
         self.marco_pestana_relacion = ttk.Frame(self.pestanas, style="Tarjeta.TFrame", padding=10)
         self.pestanas.add(self.marco_pestana_relacion, text="  Relacion Interes-Capital  ")
 
+        # Pestana 3: Asesor IA (Chat y consultas inteligentes)
+        self.marco_pestana_ia = ttk.Frame(self.pestanas, style="Tarjeta.TFrame", padding=10)
+        self.pestanas.add(self.marco_pestana_ia, text="  🤖 Asesor IA  ")
+        self._construir_contenido_chat_ia(self.marco_pestana_ia)
+
         # Inicializacion de lienzo vacio de grafica
         self._limpiar_graficas()
 
@@ -1339,9 +1366,232 @@ class AplicacionSimulador:
         self.tabla_datos.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         barra_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
+    def _construir_contenido_chat_ia(self, marco_padre):
+        """Construye la vista de conversacion y consultas con el Asesor IA."""
+        num_ajuste = obtener_ajuste_fuente(self.dict_config.get("tamano_letra", "Normal"))
+        col = self.dict_colores
+
+        # Encabezado
+        marco_encabezado = ttk.Frame(marco_padre, style="Tarjeta.TFrame")
+        marco_encabezado.pack(fill=tk.X, pady=(0, 6))
+        marco_encabezado.columnconfigure(0, weight=1)
+
+        ttk.Label(marco_encabezado, text="Asesor Financiero Inteligente",
+                  style="Seccion.TLabel").grid(row=0, column=0, sticky="w")
+
+        # Boton limpiar chat
+        ttk.Button(marco_encabezado, text="Limpiar Chat",
+                   style="Limpiar.TButton",
+                   command=self._evento_ia_limpiar_chat).grid(row=0, column=1, sticky="e")
+
+        ttk.Label(marco_encabezado,
+                  text="Interpreta los resultados calculados. Su opinión se incluirá automáticamente en PDF y Excel.",
+                  style="Normal.TLabel").grid(row=1, column=0, columnspan=2, sticky="w", pady=(2, 6))
+
+        # Botones de accion rapida
+        marco_acciones = ttk.Frame(marco_padre, style="Tarjeta.TFrame")
+        marco_acciones.pack(fill=tk.X, pady=(0, 6))
+
+        self.btn_ia_interpretar = ttk.Button(
+            marco_acciones, text="📊 Interpretar Tabla Actual",
+            style="Tema.TButton", command=self._evento_ia_interpretar_tabla
+        )
+        self.btn_ia_interpretar.pack(side=tk.LEFT, padx=(0, 6))
+
+        self.btn_ia_comparar = ttk.Button(
+            marco_acciones, text="⚖ Comparar 3 Sistemas",
+            style="Tema.TButton", command=self._evento_ia_comparar_sistemas
+        )
+        self.btn_ia_comparar.pack(side=tk.LEFT, padx=(0, 6))
+
+        # Area de conversacion con scrollbar
+        marco_chat = ttk.Frame(marco_padre, style="Tarjeta.TFrame")
+        marco_chat.pack(fill=tk.BOTH, expand=True, pady=(0, 6))
+
+        self.caja_texto_chat = tk.Text(
+            marco_chat, wrap="word", height=12,
+            bg=col["campo"], fg=col["texto_claro"],
+            insertbackground=col["texto_claro"],
+            selectbackground=col["seleccion"],
+            font=("Segoe UI", 10 + num_ajuste),
+            relief="flat", borderwidth=0, padx=8, pady=8
+        )
+        barra_chat = ttk.Scrollbar(marco_chat, orient=tk.VERTICAL,
+                                   command=self.caja_texto_chat.yview)
+        self.caja_texto_chat.configure(yscrollcommand=barra_chat.set)
+
+        self.caja_texto_chat.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        barra_chat.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Tags de estilo para el chat
+        self.caja_texto_chat.tag_configure("usuario", foreground=col["secundario"], font=("Segoe UI", 10 + num_ajuste, "bold"))
+        self.caja_texto_chat.tag_configure("ia", foreground=col["primario"], font=("Segoe UI", 10 + num_ajuste, "bold"))
+        self.caja_texto_chat.tag_configure("texto", foreground=col["texto_claro"], font=("Segoe UI", 10 + num_ajuste))
+        self.caja_texto_chat.tag_configure("sistema", foreground=col["texto_suave"], font=("Segoe UI", 9 + num_ajuste, "italic"))
+
+        # Mensaje de bienvenida inicial
+        self._agregar_mensaje_chat(
+            "Asesor IA",
+            "¡Hola! Soy tu Asesor Financiero Inteligente. Puedes pedirme una interpretación de la tabla calculada actual, comparar sistemas o hacerme cualquier consulta sobre tu préstamo.",
+            es_sistema=False
+        )
+
+        # Area inferior: campo de entrada y boton enviar
+        marco_entrada = ttk.Frame(marco_padre, style="Tarjeta.TFrame")
+        marco_entrada.pack(fill=tk.X)
+        marco_entrada.columnconfigure(0, weight=1)
+
+        self.entrada_pregunta_ia = ttk.Entry(
+            marco_entrada, textvariable=self.var_pregunta_ia,
+            font=("Segoe UI", 10 + num_ajuste)
+        )
+        self.entrada_pregunta_ia.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+        self.entrada_pregunta_ia.bind("<Return>", lambda e: self._evento_ia_enviar_pregunta())
+
+        self.btn_ia_enviar = ttk.Button(
+            marco_entrada, text="Enviar",
+            style="Calcular.TButton", command=self._evento_ia_enviar_pregunta
+        )
+        self.btn_ia_enviar.grid(row=0, column=1, sticky="e")
+
+        # Etiqueta de estado inferior
+        lbl_estado = ttk.Label(marco_padre, textvariable=self.var_estado_ia,
+                               style="Normal.TLabel")
+        lbl_estado.pack(anchor=tk.W, pady=(4, 0))
+
     # ==========================================
     # Eventos y Logica de Negocio
     # ==========================================
+
+    def _agregar_mensaje_chat(self, str_autor: str, str_mensaje: str, es_sistema: bool = False):
+        """Agrega un mensaje formateado al widget de texto del chat."""
+        if not hasattr(self, "caja_texto_chat"):
+            return
+        self.caja_texto_chat.configure(state="normal")
+        if es_sistema:
+            self.caja_texto_chat.insert(tk.END, f"[{str_autor}]: {str_mensaje}\n\n", "sistema")
+        else:
+            tag_autor = "usuario" if str_autor == "Tú" else "ia"
+            self.caja_texto_chat.insert(tk.END, f"{str_autor}:\n", tag_autor)
+            self.caja_texto_chat.insert(tk.END, f"{str_mensaje.strip()}\n\n", "texto")
+        self.caja_texto_chat.see(tk.END)
+        self.caja_texto_chat.configure(state="disabled")
+
+    def _evento_ia_limpiar_chat(self):
+        """Limpia el historial visual del chat y la opinion guardada."""
+        self.cad_opinion_ia = ""
+        if hasattr(self, "caja_texto_chat"):
+            self.caja_texto_chat.configure(state="normal")
+            self.caja_texto_chat.delete("1.0", tk.END)
+            self.caja_texto_chat.configure(state="disabled")
+        self._agregar_mensaje_chat("Sistema", "Conversación y dictamen reiniciados.", es_sistema=True)
+
+    def _ejecutar_en_hilo_ia(self, fn_tarea, *args):
+        """Ejecuta una consulta a la IA en segundo plano para no congelar la ventana."""
+        if self.esta_procesando_ia:
+            self._mostrar_alerta("El asesor IA ya está procesando una consulta. Espera un momento.")
+            return
+
+        self.esta_procesando_ia = True
+        self.var_estado_ia.set("Consultando al Asesor IA...")
+        if hasattr(self, "btn_ia_enviar"):
+            self.btn_ia_enviar.state(["disabled"])
+            self.btn_ia_interpretar.state(["disabled"])
+            self.btn_ia_comparar.state(["disabled"])
+
+        def _hilo_trabajo():
+            try:
+                resultado = fn_tarea(*args)
+            except Exception as e:
+                resultado = f"[Error]: {str(e)}"
+            self.raiz.after(0, lambda: self._finalizar_hilo_ia(resultado))
+
+        threading.Thread(target=_hilo_trabajo, daemon=True).start()
+
+    def _finalizar_hilo_ia(self, str_resultado: str):
+        """Recibe el resultado del hilo de IA y actualiza la interfaz de forma segura."""
+        self.esta_procesando_ia = False
+        self.var_estado_ia.set("Listo. Opinión guardada para el documento exportado.")
+        if hasattr(self, "btn_ia_enviar"):
+            self.btn_ia_enviar.state(["!disabled"])
+            self.btn_ia_interpretar.state(["!disabled"])
+            self.btn_ia_comparar.state(["!disabled"])
+
+        self.cad_opinion_ia = str_resultado
+        self._agregar_mensaje_chat("Asesor IA", str_resultado)
+
+    def _evento_ia_interpretar_tabla(self):
+        """Solicita a la IA una interpretacion completa de la tabla calculada actual."""
+        if not self.lista_filas_actual:
+            self._mostrar_alerta("Primero calcula una tabla en 'Calcular Tabla' antes de pedir la interpretación.")
+            return
+        total_p, total_i = self._calcular_totales_lista(self.lista_filas_actual)
+        resumen = {
+            "sistema": self.dict_params_actual.get("sistema", "Desconocido"),
+            "monto": self.dict_params_actual.get("monto", 0.0),
+            "plazo": self.dict_params_actual.get("meses", 0),
+            "tasa": self.dict_params_actual.get("tasa", 0.0),
+            "total_intereses": total_i,
+            "pago_total": total_p,
+            "cat": self.var_porc_interes.get().replace("% Interes: ", ""),
+        }
+        self._agregar_mensaje_chat("Tú", "Por favor analiza e interpreta la tabla de amortización actual.")
+        self._ejecutar_en_hilo_ia(explicar_tabla_amortizacion, resumen, self.lista_filas_actual)
+
+    def _evento_ia_comparar_sistemas(self):
+        """Calcula los 3 sistemas para los parametros actuales y solicita una comparativa a la IA."""
+        try:
+            val_monto = float(self.var_monto.get().strip())
+            val_tasa = float(self.var_tasa_anual.get().strip())
+            num_meses = int(self.var_plazo_meses.get().strip())
+        except ValueError:
+            self._mostrar_alerta("Verifica que monto, tasa y plazo tengan valores válidos.")
+            return
+
+        def _tarea_comparar():
+            tf = calcular_amortizacion("Frances", val_monto, val_tasa, num_meses)
+            ta = calcular_amortizacion("Aleman", val_monto, val_tasa, num_meses)
+            tam = calcular_amortizacion("Americano", val_monto, val_tasa, num_meses)
+
+            tot_f, int_f = self._calcular_totales_lista(tf)
+            tot_a, int_a = self._calcular_totales_lista(ta)
+            tot_am, int_am = self._calcular_totales_lista(tam)
+
+            rf = {"total_intereses": int_f, "pago_total": tot_f,
+                  "primera_cuota": tf[0]["cuota"] if tf else 0, "ultima_cuota": tf[-1]["cuota"] if tf else 0}
+            ra = {"total_intereses": int_a, "pago_total": tot_a,
+                  "primera_cuota": ta[0]["cuota"] if ta else 0, "ultima_cuota": ta[-1]["cuota"] if ta else 0}
+            ram = {"total_intereses": int_am, "pago_total": tot_am,
+                   "cuota_interes": tam[0]["cuota"] if tam else 0, "cuota_final": tam[-1]["cuota"] if tam else 0}
+
+            return comparar_sistemas(rf, ra, ram)
+
+        self._agregar_mensaje_chat("Tú", "Compara los tres sistemas de amortización (Francés, Alemán y Americano) para este crédito.")
+        self._ejecutar_en_hilo_ia(_tarea_comparar)
+
+    def _evento_ia_enviar_pregunta(self):
+        """Envia una pregunta libre del usuario sobre la simulacion."""
+        pregunta = self.var_pregunta_ia.get().strip()
+        if not pregunta:
+            return
+        if not self.lista_filas_actual:
+            self._mostrar_alerta("Calcula primero una tabla para que el asesor pueda analizar tu préstamo.")
+            return
+
+        self.var_pregunta_ia.set("")
+        self._agregar_mensaje_chat("Tú", pregunta)
+
+        total_p, total_i = self._calcular_totales_lista(self.lista_filas_actual)
+        resumen = {
+            "sistema": self.dict_params_actual.get("sistema", "Desconocido"),
+            "monto": self.dict_params_actual.get("monto", 0.0),
+            "plazo": self.dict_params_actual.get("meses", 0),
+            "tasa": self.dict_params_actual.get("tasa", 0.0),
+            "total_intereses": total_i,
+            "pago_total": total_p,
+            "cat": self.var_porc_interes.get().replace("% Interes: ", ""),
+        }
+        self._ejecutar_en_hilo_ia(simular_escenario_personalizado, pregunta, resumen, self.lista_filas_actual)
 
     def _evento_calcular(self):
         """Valida las entradas del usuario y ejecuta el calculo del sistema seleccionado llamando a C++."""
@@ -1485,7 +1735,8 @@ class AplicacionSimulador:
                     self.lista_filas_actual, self.dict_params_actual, ruta_destino,
                     num_decimales=num_dec, simbolo_moneda=str_moneda,
                     incluir_logo=bool(self.dict_config.get("incluir_logo_pdf", True)),
-                    incluir_pie=bool(self.dict_config.get("incluir_pie_pdf", True)))
+                    incluir_pie=bool(self.dict_config.get("incluir_pie_pdf", True)),
+                    cad_opinion_ia=self.cad_opinion_ia)
             except Exception as obj_err:
                 self._mostrar_alerta(f"No se pudo exportar a PDF: {obj_err}")
                 return
@@ -1499,11 +1750,13 @@ class AplicacionSimulador:
             try:
                 ruta_final = exportar_tabla_excel(
                     self.lista_filas_actual, self.dict_params_actual, ruta_destino,
-                    num_decimales=num_dec, simbolo_moneda=str_moneda)
+                    num_decimales=num_dec, simbolo_moneda=str_moneda,
+                    cad_opinion_ia=self.cad_opinion_ia)
             except Exception as obj_err:
                 self._mostrar_alerta(f"No se pudo exportar a Excel: {obj_err}")
                 return
-        messagebox.showinfo("Exportar", f"Archivo guardado en:\n{ruta_final}")
+        nota_ia = "\n\n(Se incluyó el dictamen del Asesor IA en el documento)." if self.cad_opinion_ia else ""
+        messagebox.showinfo("Exportar", f"Archivo guardado en:\n{ruta_final}{nota_ia}")
 
     def _evento_exportar_comparar(self, tipo_archivo: str):
         """Exporta A + B + grafica comparativa a PDF o Excel en un solo archivo."""

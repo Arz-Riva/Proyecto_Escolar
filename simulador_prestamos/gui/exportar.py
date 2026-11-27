@@ -256,7 +256,8 @@ def _linea_indicadores(lista_filas: list[dict], dict_params: dict,
 # ==========================================
 
 def exportar_tabla_excel(lista_filas: list[dict], dict_params: dict, ruta_archivo: str,
-                         num_decimales: int = 2, simbolo_moneda: str = "$") -> str:
+                         num_decimales: int = 2, simbolo_moneda: str = "$",
+                         cad_opinion_ia: str | None = None) -> str:
     """Guarda tabla + grafica en .xlsx con titulo Segoe UI y texto Arial."""
     if not lista_filas:
         raise ValueError("No hay datos para exportar. Calcula una tabla primero.")
@@ -303,6 +304,17 @@ def exportar_tabla_excel(lista_filas: list[dict], dict_params: dict, ruta_archiv
     hoja["B%d" % hoja.max_row].number_format = formato_excel
     hoja["B%d" % (hoja.max_row - 1)].number_format = formato_excel
 
+    # Seccion de opinion / dictamen de IA si existe
+    if cad_opinion_ia and cad_opinion_ia.strip():
+        hoja.append([])
+        fila_tit_ia = hoja.max_row + 1
+        hoja.cell(row=fila_tit_ia, column=1, value="Dictamen y Opinion del Asesor IA:").font = Font(
+            name=FUENTE_TITULO_EXCEL, bold=True, size=11, color=COLOR_CABECERA_EXCEL
+        )
+        for linea_texto in cad_opinion_ia.strip().split("\n"):
+            hoja.append([linea_texto])
+            hoja.cell(row=hoja.max_row, column=1).font = Font(name=FUENTE_TEXTO_EXCEL, size=9)
+
     # Grafica conjunta en la misma hoja, sin botones separados
     ruta_png = _guardar_grafica_temporal(lista_filas)
     try:
@@ -321,7 +333,8 @@ def exportar_tabla_excel(lista_filas: list[dict], dict_params: dict, ruta_archiv
 
 def exportar_tabla_pdf(lista_filas: list[dict], dict_params: dict, ruta_archivo: str,
                        num_decimales: int = 2, simbolo_moneda: str = "$",
-                       incluir_logo: bool = True, incluir_pie: bool = True) -> str:
+                       incluir_logo: bool = True, incluir_pie: bool = True,
+                       cad_opinion_ia: str | None = None) -> str:
     """Guarda tabla + grafica con encabezado y pie morados y retorna la ruta."""
     if not lista_filas:
         raise ValueError("No hay datos para exportar. Calcula una tabla primero.")
@@ -368,7 +381,29 @@ def exportar_tabla_pdf(lista_filas: list[dict], dict_params: dict, ruta_archivo:
         partes.append(Spacer(1, 12))
         partes.append(Paragraph("Relacion Interes-Capital", estilos["Heading2"]))
         partes.append(ImagenPDF(ruta_png, width=440, height=270))
+
+        # Dictamen y Analisis del Asesor IA en recuadro formal si esta disponible
+        if cad_opinion_ia and cad_opinion_ia.strip():
+            partes.append(Spacer(1, 14))
+            partes.append(Paragraph("Dictamen y Analisis del Asesor IA", estilos["Heading2"]))
+            texto_seguro = (cad_opinion_ia.strip()
+                            .replace("&", "&amp;")
+                            .replace("<", "&lt;")
+                            .replace(">", "&gt;")
+                            .replace("\n", "<br/>"))
+            tabla_dictamen = Table([[Paragraph(texto_seguro, estilos["Normal"])]], colWidths=[515])
+            tabla_dictamen.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F6F0FA")),
+                ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#380057")),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+            ]))
+            partes.append(tabla_dictamen)
+
         doc.build(partes, onFirstPage=decorar, onLaterPages=decorar)
+
     finally:
         try:
             os.remove(ruta_png)
